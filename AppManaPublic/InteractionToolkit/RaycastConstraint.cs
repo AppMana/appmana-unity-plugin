@@ -48,6 +48,12 @@ namespace AppMana.InteractionToolkit
         private RaycastHit[] m_RaycastHits1;
         private RaycastHit[] m_RaycastHits2;
 
+        public Camera camera
+        {
+            get => m_Camera;
+            set => m_Camera = value;
+        }
+
         public Plane plane
         {
             get

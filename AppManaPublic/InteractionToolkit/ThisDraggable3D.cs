@@ -6,6 +6,7 @@ using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.InputSystem.UI;
 
 namespace AppMana.InteractionToolkit
@@ -26,6 +27,10 @@ namespace AppMana.InteractionToolkit
         protected override void Awake()
         {
             base.Awake();
+            if (!EnhancedTouchSupport.enabled)
+            {
+                EnhancedTouchSupport.Enable();
+            }
             if (!m_Target.valid)
             {
                 var rigidbody = GetComponent<Rigidbody>();
@@ -42,6 +47,11 @@ namespace AppMana.InteractionToolkit
 
             Assert.IsTrue(m_Target.valid, "Configure the target to set how the object should be moved");
             Assert.IsTrue(m_RaycastConstraint.hasConstraint, "Choose where to constrain the motion to.");
+            if (m_RaycastConstraint.camera == null)
+            {
+                m_RaycastConstraint.camera = Camera.main;
+            }
+
             Assert.IsTrue(m_RaycastConstraint.canRaycast, "Set a camera.");
         }
 
@@ -51,9 +61,9 @@ namespace AppMana.InteractionToolkit
 
             // drag the object along the surface of the specified constraints
 
-            var pointer = (Vector2Control) null;
-            var buttons = (ButtonControl[]) null;
-            var positionContext = (Positionable.IPositionContext) null;
+            var pointer = (Vector2Control)null;
+            var buttons = (ButtonControl[])null;
+            var positionContext = (Positionable.IPositionContext)null;
             // todo: support something other than new input system
             this.OnBeginDragAsObservable().Subscribe(pointerEventData =>
             {
@@ -82,7 +92,7 @@ namespace AppMana.InteractionToolkit
                 .Where(_ => !IsDestroyed() && pointer != null)
                 .Subscribe(_ =>
                 {
-                    if (buttons.All(button=>!button.isPressed))
+                    if (buttons.All(button => !button.isPressed))
                     {
                         pointer = null;
                         buttons = null;
