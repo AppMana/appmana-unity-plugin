@@ -1,0 +1,28 @@
+{
+    "name": "AppManaPublic",
+    "rootNamespace": "",
+    "references": [
+        "Unity.InputSystem",
+        "UniRx"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "",
+            "define": "UNITY_INPUTSYSTEM"
+        },
+        {
+            "name": "com.neuecc.unirx",
+            "expression": "",
+            "define": "UNIRX"
+        }
+    ],
+    "noEngineReferences": false
+}
