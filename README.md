@@ -33,8 +33,8 @@ Add the following dependencies to your `Packages/manifest.json`:
 
 ### Usage
 
-Add the `RemotePlayableConfiguration` component and configure the camera, audio source and `Canvas` components associated with the player.
-
-Make sure only one scene is checked in the editor. This will be the one that will be built into your streaming application.
-
-Multiplayer is supported in an experimental mode. Please contact us via `https://appmana.com` or [Discord](https://discord.gg/sTSzaHSJWV) to learn more.
+ 1. Add the `RemotePlayableConfiguration` component and configure the camera, audio source and `Canvas` components associated with the player.
+ 2. Make sure only one scene is checked in the editor. This will be the one that will be built into your streaming application. 
+ 3. Multiplayer is supported in an experimental mode. Please contact us via `https://appmana.com` or [Discord](https://discord.gg/sTSzaHSJWV) to learn more. 
+ 4. Use the provided `InputSettings` and `InputActions` assets for maximum compatibility with the simulated inputs platform.
+ 5. Make sure Run in Background is checked in Player Settings.
