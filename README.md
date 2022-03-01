@@ -26,7 +26,6 @@ Add the following dependencies to your `Packages/manifest.json`:
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     "com.neuecc.unirx": "https://github.com/neuecc/UniRx.git?path=Assets/Plugins/UniRx/Scripts",
     // end selection for copy and paste
-    ...
   }
 }
 ```
@@ -38,3 +37,31 @@ Add the following dependencies to your `Packages/manifest.json`:
  3. Multiplayer is supported in an experimental mode. Please contact us via `https://appmana.com` or [Discord](https://discord.gg/sTSzaHSJWV) to learn more. 
  4. Use the provided `InputSettings` and `InputActions` assets for maximum compatibility with the simulated inputs platform.
  5. Make sure Run in Background is checked in Player Settings.
+
+### Tips and Tricks
+
+#### Using Assets from Maya
+
+ 1. Create a new project in Maya and add to your git directory. Ensure the directories are kept by adding `.gitkeep` to each folder:
+
+```shell
+find . -type d -exec sh -c 'for d; do touch "$d/.gitkeep"; done' _ {} +
+```
+
+ 2. Add Maya filetypes to `git-lfs`:
+
+```shell
+TODO
+```
+
+ 3. Add the HDRP texture packer utility to your `manifest.json`
+
+```json
+{
+  "dependencies": {
+    // start selection for copy and paste
+    "ca.andydbc.unity-texture-packer":"https://github.com/andydbc/unity-texture-packer.git#master"
+    // end selection
+  }
+}
+```
