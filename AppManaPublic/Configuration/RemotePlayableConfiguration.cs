@@ -28,6 +28,9 @@ namespace AppManaPublic.Configuration
         [SerializeField] private UnityEvent m_OnPlayerDisconnected;
 
         [SerializeField] private CanvasScaler[] m_CanvasScalers = new CanvasScaler[0];
+        [SerializeField] private float m_BaseScale = 1f;
+
+        public float baseScale => m_BaseScale;
 
         public Camera camera1
         {

@@ -12,6 +12,9 @@ Stream your apps and games with AppMana for Unity Plugin
  - New InputSystem (`"com.unity.inputsystem": "1.3.0"`). `Input.mousePosition` and other legacy input approaches are **not supported**. See [here for migration tips](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.3/manual/Migration.html).
  - You **cannot** load or change scenes. Use `Prefabs` instead.
  - You **cannot** use overlay canvases. [Use this package](https://github.com/alelievr/HDRP-UI-Camera-Stacking) to prevent UI elements from receiving motion blur.
+ - Disable **Validate Assembly Versions** in **Player Settings**.
+ - Use a **Constant Pixel Size** setting for your Canvas Scaler. Set the **Base Scale** inside your **Remote Playable Configuration** component to the scale you use for the purposes of the art. The runtime will correctly then multiply the device's real scale on top of it.
+ - Do not use **Screen** properties.
 
 ### Installation
 
