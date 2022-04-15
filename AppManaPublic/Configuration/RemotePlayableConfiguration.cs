@@ -52,7 +52,7 @@ namespace AppManaPublic.Configuration
         public static void Validate()
         {
             var playableConfigurations = FindObjectsOfType<RemotePlayableConfiguration>();
-            if (playableConfigurations.Length == 0)
+            if ((playableConfigurations?.Length ?? 0) == 0)
             {
                 Debug.LogWarning(
                     $"{nameof(RemotePlayableConfiguration)} did not detect any configured cameras or audio listeners, the game object {Camera.main.gameObject.name} with the main camera attached will be used instead");
