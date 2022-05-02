@@ -37,6 +37,6 @@ Add the following dependencies to your `Packages/manifest.json`:
  1. Add the `RemotePlayableConfiguration` component and configure the camera, audio source and `Canvas` components associated with the player.
  3. Multiplayer is supported in an experimental mode. Please contact us via `https://appmana.com` or [Discord](https://discord.gg/sTSzaHSJWV) to learn more. 
  4. Use the provided `InputSettings` and `InputActions` assets for maximum compatibility with the simulated inputs platform.
- 5. Check **Project Settings | Player | Resolution and Presentation | Run in Background **
+ 5. Check **Project Settings | Player | Resolution and Presentation | Run in Background**
  6. Uncheck  **Project Settings | Player | Other Settings | Auto Graphics API for Windows** and add **DirectX 11** and **DirectX 12 (Experimental)** to your list of **Graphics APIs for Windows**.
  7. Configure **Project Settings | Input System Package | Background Behavior** to **Ignore Focus**.
