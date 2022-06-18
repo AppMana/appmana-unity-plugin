@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace AppManaPublic.Configuration
 {
-    public class RemotePlayableConfiguration : UIBehaviour
+    internal class RemotePlayableConfiguration : UIBehaviour
     {
         [Tooltip("The camera to stream for this player")] [SerializeField]
         private Camera m_Camera;
@@ -48,25 +48,11 @@ namespace AppManaPublic.Configuration
 
         public Transform inputsOnlyAffectThisHierarchyOrAny => m_InputsOnlyAffectThisHierarchyOrAny;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        public static void Validate()
+        protected override void Start()
         {
-            var playableConfigurations = FindObjectsOfType<RemotePlayableConfiguration>();
-            if ((playableConfigurations?.Length ?? 0) == 0)
-            {
-                Debug.LogWarning(
-                    $"{nameof(RemotePlayableConfiguration)} did not detect any configured cameras or audio listeners, the game object {Camera.main.gameObject.name} with the main camera attached will be used instead");
-                return;
-            }
+            base.Start();
 
-            Assert.IsTrue(
-                playableConfigurations.All(configuration => configuration.camera1 == null) ||
-                playableConfigurations.All(configuration => configuration.camera1 != null),
-                $"{nameof(RemotePlayableConfiguration)} detected an invalid camera setup, all {nameof(RemotePlayableConfiguration)} scripts must have a camera set or none of them");
-            Assert.IsTrue(
-                playableConfigurations.All(configuration => configuration.audioListener == null) ||
-                playableConfigurations.All(configuration => configuration.audioListener != null),
-                $"{nameof(RemotePlayableConfiguration)} detected an invalid audio listener setup, all {nameof(RemotePlayableConfiguration)} scripts must have an audio listener set or none of them");
+            PluginBase.EnsurePlugins();
         }
     }
 }

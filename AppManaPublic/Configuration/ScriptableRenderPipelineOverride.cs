@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 namespace AppManaPublic.Configuration
 {
     [ExecuteAlways]
-    public class ScriptableRenderPipelineOverride : UIBehaviour
+    internal class ScriptableRenderPipelineOverride : UIBehaviour
     {
         [SerializeField] private RenderPipelineAsset m_Asset;
 
