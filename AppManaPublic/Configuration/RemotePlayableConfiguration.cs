@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace AppManaPublic.Configuration
 {
-    internal class RemotePlayableConfiguration : UIBehaviour
+    public class RemotePlayableConfiguration : UIBehaviour
     {
         [Tooltip("The camera to stream for this player")] [SerializeField]
         private Camera m_Camera;
