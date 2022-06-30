@@ -10,6 +10,8 @@ namespace AppManaPublic.Configuration
 {
     public class RemotePlayableConfiguration : UIBehaviour
     {
+        [SerializeField] private bool m_EnableStreamingInEditor = true;
+
         [Tooltip("The camera to stream for this player")] [SerializeField]
         private Camera m_Camera;
 
@@ -48,11 +50,19 @@ namespace AppManaPublic.Configuration
 
         public Transform inputsOnlyAffectThisHierarchyOrAny => m_InputsOnlyAffectThisHierarchyOrAny;
 
-        protected override void Start()
+        protected override void OnEnable()
         {
-            base.Start();
+            if (Application.isEditor && !m_EnableStreamingInEditor)
+            {
+                return;
+            }
 
             PluginBase.EnsurePlugins();
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
         }
     }
 }

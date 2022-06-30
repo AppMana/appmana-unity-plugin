@@ -10,8 +10,11 @@ namespace AppManaPublic.Editor
         {
             PlayerSettings.SetAdditionalIl2CppArgs("--generic-virtual-method-iterations=2");
             PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneWindows64,
-                new[] { GraphicsDeviceType.Direct3D11, GraphicsDeviceType.Direct3D12 });
+                new[] {GraphicsDeviceType.Direct3D11, GraphicsDeviceType.Direct3D12});
             PlayerSettings.assemblyVersionValidation = false;
+            PlayerSettings.MTRendering = true;
+            PlayerSettings.graphicsJobs = true;
+            PlayerSettings.graphicsJobMode = GraphicsJobMode.Native;
         }
     }
 }
