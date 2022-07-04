@@ -54,6 +54,7 @@ namespace AppManaPublic.Configuration
         {
             if (Application.isEditor && !m_EnableStreamingInEditor)
             {
+                m_OnPlayerConnected.Invoke();
                 return;
             }
 
@@ -62,6 +63,11 @@ namespace AppManaPublic.Configuration
 
         protected override void OnDisable()
         {
+            if (Application.isEditor && !m_EnableStreamingInEditor)
+            {
+                m_OnPlayerDisconnected.Invoke();
+                return;
+            }
             base.OnDisable();
         }
     }
