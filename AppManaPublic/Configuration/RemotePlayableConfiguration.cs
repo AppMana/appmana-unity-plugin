@@ -1,36 +1,49 @@
-﻿using System.Linq;
-using JetBrains.Annotations;
-using UnityEngine;
-using UnityEngine.Assertions;
+﻿using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using UnityEngine.Scripting;
 using UnityEngine.UI;
 
 namespace AppManaPublic.Configuration
 {
+    [Preserve, DefaultExecutionOrder(10000)]
     public class RemotePlayableConfiguration : UIBehaviour
     {
-        [SerializeField] private bool m_EnableStreamingInEditor = true;
-
-        [Tooltip("The camera to stream for this player")] [SerializeField]
+        [Header("Setup")] [SerializeField, Tooltip("Set this to the camera to stream for this player")]
         private Camera m_Camera;
 
-        [SerializeField] private AudioListener m_AudioListener;
+        [SerializeField, Tooltip("Set this to the audio listener for this player, or leave null to disable audio")]
+        private AudioListener m_AudioListener;
 
-        [Tooltip(
-            "When set, EventSystem inputs corresponding to this player will only affect objects in this hierarchy")]
-        [SerializeField]
+        [SerializeField, Tooltip("Set this to canvas scalers for the player's canvas, used to adjust display DPI")]
+        private CanvasScaler[] m_CanvasScalers = new CanvasScaler[0];
+
+        [SerializeField, Tooltip("Specify a design scale for your UI - typically this is 1.0, 2.0 or 3.0")]
+        private float m_BaseScale = 1f;
+
+        [SerializeField, Tooltip("Called when this player connects to the experience")]
+        private UnityEvent m_OnPlayerConnected;
+
+        [SerializeField, Tooltip("Called when this player disconnects from the experience")]
+        private UnityEvent m_OnPlayerDisconnected;
+
+        [Header("Advanced")]
+        [SerializeField, Tooltip("Set this to limit event system callbacks to objects in this hierarchy")]
         private Transform m_InputsOnlyAffectThisHierarchyOrAny;
+
+        [SerializeField, Tooltip("Contact us for editor streaming support")]
+        private bool m_EnableStreamingInEditor;
+
+        /// <summary>
+        /// Set to <c>true</c> when we're in editor and a player connected invocation was requested.
+        /// </summary>
+        private bool m_RequestedOnPlayerConnectedInvoke;
+
+        private bool m_DidCallInStart = false;
 
         public UnityEvent onPlayerConnected => m_OnPlayerConnected;
 
         public UnityEvent onPlayerDisconnected => m_OnPlayerDisconnected;
-
-        [SerializeField] private UnityEvent m_OnPlayerConnected;
-        [SerializeField] private UnityEvent m_OnPlayerDisconnected;
-
-        [SerializeField] private CanvasScaler[] m_CanvasScalers = new CanvasScaler[0];
-        [SerializeField] private float m_BaseScale = 1f;
 
         public float baseScale => m_BaseScale;
 
@@ -50,11 +63,30 @@ namespace AppManaPublic.Configuration
 
         public Transform inputsOnlyAffectThisHierarchyOrAny => m_InputsOnlyAffectThisHierarchyOrAny;
 
+        protected override void Start()
+        {
+            if (m_RequestedOnPlayerConnectedInvoke && !m_DidCallInStart)
+            {
+                m_RequestedOnPlayerConnectedInvoke = false;
+                m_DidCallInStart = true;
+                m_OnPlayerConnected.Invoke();
+            }
+        }
+
         protected override void OnEnable()
         {
             if (Application.isEditor && !m_EnableStreamingInEditor)
             {
-                m_OnPlayerConnected.Invoke();
+                if (!m_DidCallInStart)
+                {
+                    // delay this until Start() has been called, to give time for all the other user scripts to have run
+                    m_RequestedOnPlayerConnectedInvoke = true;
+                }
+                else
+                {
+                    m_OnPlayerConnected.Invoke();
+                }
+
                 return;
             }
 
@@ -68,6 +100,7 @@ namespace AppManaPublic.Configuration
                 m_OnPlayerDisconnected.Invoke();
                 return;
             }
+
             base.OnDisable();
         }
     }

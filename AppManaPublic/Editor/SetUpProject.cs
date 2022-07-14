@@ -3,6 +3,9 @@ using UnityEngine.Rendering;
 
 namespace AppManaPublic.Editor
 {
+    /// <summary>
+    /// Configures your project for optimal streaming in AppMana
+    /// </summary>
     [InitializeOnLoad]
     public class SetUpProject
     {
