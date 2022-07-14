@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 namespace AppMana.InteractionToolkit
 {
     [Serializable]
-    public class Positionable
+    internal class Positionable
     {
         [Header("Transform Movement")] [SerializeField]
         private Transform m_Transform;

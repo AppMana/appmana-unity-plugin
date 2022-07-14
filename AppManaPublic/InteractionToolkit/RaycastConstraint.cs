@@ -6,6 +6,9 @@ using UnityEngine.Assertions;
 
 namespace AppMana.InteractionToolkit
 {
+    /// <summary>
+    /// Specifies constraints on how to interpret raycasts.
+    /// </summary>
     [Serializable]
     public struct RaycastConstraint : ISerializationCallbackReceiver
     {

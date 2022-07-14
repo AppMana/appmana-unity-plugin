@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "Unity.InputSystem",
-        "UniRx"
+        "UniRx",
+        "Cinemachine"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -22,6 +23,11 @@
             "name": "com.neuecc.unirx",
             "expression": "",
             "define": "UNIRX"
+        },
+        {
+            "name": "com.unity.cinemachine",
+            "expression": "",
+            "define": "CINEMACHINE"
         }
     ],
     "noEngineReferences": false
