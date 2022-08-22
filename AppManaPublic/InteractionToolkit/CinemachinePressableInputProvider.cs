@@ -1,12 +1,15 @@
 #if CINEMACHINE
 using Cinemachine;
+using UnityEngine.EventSystems;
 #endif
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 namespace AppMana.InteractionToolkit
 {
-    public class CinemachinePressableInputProvider :
+    public partial class CinemachinePressableInputProvider :
 #if CINEMACHINE
         CinemachineInputProvider
 #else
@@ -20,10 +23,11 @@ namespace AppMana.InteractionToolkit
              "Set this to a UI/Click action, and users will need to press a pointer button / touch in order to orbit.")]
         private InputActionReference m_EnableWhenPressed;
 
+
 #if CINEMACHINE
         private float[] m_Values = new float[3];
 
-        private void Start()
+        protected virtual void Start()
         {
             var pressed = false;
 
@@ -48,7 +52,7 @@ namespace AppMana.InteractionToolkit
                 {
                     // mouse buttons and other pointers must be pressed in order to cause
                     // an orbit
-                    if (m_EnableWhenPressed != null && !pressed && axis < 2)
+                    if (!ActionPredicate(axis, ctx, pressed))
                     {
                         m_Values[axis] = 0f;
                         return;
@@ -67,6 +71,21 @@ namespace AppMana.InteractionToolkit
 
                 action.canceled += _ => { m_Values[axis] = 0f; };
             }
+        }
+
+        public virtual bool ActionPredicate(int axis, InputAction.CallbackContext ctx, bool pressed)
+        {
+            if (!enabled)
+            {
+                return false;
+            }
+            
+            if (m_EnableWhenPressed != null && !pressed && axis < 2)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public override float GetAxisValue(int axis)

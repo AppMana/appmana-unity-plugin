@@ -4,7 +4,9 @@
     "references": [
         "Unity.InputSystem",
         "UniRx",
-        "Cinemachine"
+        "Cinemachine",
+        "UnityEditor.UI",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
