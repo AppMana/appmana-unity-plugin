@@ -24,6 +24,9 @@ namespace AppMana.InteractionToolkit
         [Header("Movement Constraints"), SerializeField]
         private RaycastConstraint m_RaycastConstraint = RaycastConstraint.xzPlane;
 
+        private BoolReactiveProperty m_IsDragging = new();
+        public IReadOnlyReactiveProperty<bool> isDragging => m_IsDragging;
+
         protected override void Awake()
         {
             base.Awake();
@@ -76,12 +79,14 @@ namespace AppMana.InteractionToolkit
                         positionContext = m_Target.Position(m_RaycastOnObject.canRaycast
                             ? m_RaycastOnObject.GetWorldPositionConstrained(pointer.ReadValue())
                             : null);
+                        m_IsDragging.Value = true;
                         return;
                     }
                 }
 
                 pointer = null;
                 positionContext?.OnCompleted();
+                m_IsDragging.Value = false;
                 positionContext = null;
             }).AddTo(this);
 
@@ -98,6 +103,7 @@ namespace AppMana.InteractionToolkit
                         buttons = null;
                         positionContext.OnCompleted();
                         positionContext = null;
+                        m_IsDragging.Value = false;
                         return;
                     }
 
@@ -106,7 +112,11 @@ namespace AppMana.InteractionToolkit
                     var currentPosition = positionContext.position;
                     var desiredPosition =
                         m_RaycastConstraint.GetWorldPositionConstrained(pointerPosition, currentPosition);
-                    positionContext.OnNext(desiredPosition ?? currentPosition);
+                    if (desiredPosition != null)
+                    {
+                        positionContext.OnNext(desiredPosition.Value);
+                    }
+                    m_IsDragging.Value = true;
                 });
         }
 

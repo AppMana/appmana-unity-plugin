@@ -48,8 +48,8 @@ namespace AppMana.InteractionToolkit
             }
             else if (m_Rigidbody)
             {
-                m_CurrentContext = new RigidbodyPositionContext(m_Rigidbody, m_UseKinematic)
-                    {damping = m_Damping, force = m_Force, attachmentPosition = attachmentPosition};
+                m_CurrentContext = new RigidbodyPositionContext(m_Rigidbody, m_UseKinematic, m_Damping, m_Force,
+                    attachmentPosition);
             }
 
             return m_CurrentContext;
@@ -92,10 +92,13 @@ namespace AppMana.InteractionToolkit
             private Subject<Vector3> m_Positions = new Subject<Vector3>();
             private readonly CompositeDisposable m_Loops = new CompositeDisposable();
 
-            public RigidbodyPositionContext(Rigidbody rigidbody, bool useKinematic)
+            public RigidbodyPositionContext(Rigidbody rigidbody, bool useKinematic, float damping, float force, Vector3? attachmentPosition)
             {
                 this.rigidbody = rigidbody;
                 this.useKinematic = useKinematic;
+                this.damping = damping;
+                this.force = force;
+                this.attachmentPosition = attachmentPosition;
 
                 if (useKinematic)
                 {
@@ -143,7 +146,7 @@ namespace AppMana.InteractionToolkit
             public Transform AttachJoint(Rigidbody rb, Vector3 attachmentPosition)
             {
                 var go = new GameObject("(Attachment Point)");
-                go.hideFlags = HideFlags.HideInHierarchy;
+                // go.hideFlags = HideFlags.HideInHierarchy;
                 go.transform.position = attachmentPosition;
 
                 var newRb = go.AddComponent<Rigidbody>();

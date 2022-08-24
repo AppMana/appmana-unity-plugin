@@ -14,7 +14,9 @@ namespace AppMana.InteractionToolkit
     {
         internal const int defaultMaxRaycastHits = 20;
         internal const float defaultMaxDistanceForAllRays = 1000f;
+        [Header("Common")]
         [SerializeField] private Camera m_Camera;
+        [SerializeField] private Vector3 m_WorldOffset;
 
         // planes
         [Header("Local Plane Option")] [SerializeField]
@@ -134,13 +136,20 @@ namespace AppMana.InteractionToolkit
             var finalColliderSet = TryComputeFinalColliderSet();
             // when there are multiple ray hitting points, choose the one closest to the provided position (typically
             // the transform's current position when moving something) as though this is a 2-manifold
-            return planePosition.Concat(m_RaycastHits1
+            var worldPositionConstrained = planePosition.Concat(m_RaycastHits1
                     .Take(size1)
                     .Concat(m_RaycastHits2.Take(size2).Where(hit => finalColliderSet.Contains(hit.collider)))
                     .Select(hit => hit.point))
                 .OrderBy(hit => (hit - currentPosition).sqrMagnitude)
                 .Select(hit => (Vector3?) hit)
                 .FirstOrDefault();
+            
+            if (worldPositionConstrained != null)
+            {
+                worldPositionConstrained += m_WorldOffset;
+            }
+            
+            return worldPositionConstrained;
         }
 
         private ISet<Collider> TryComputeFinalColliderSet()
