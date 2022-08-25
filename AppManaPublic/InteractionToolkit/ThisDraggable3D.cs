@@ -55,6 +55,11 @@ namespace AppMana.InteractionToolkit
                 m_RaycastConstraint.camera = Camera.main;
             }
 
+            if (m_RaycastOnObject.camera == null)
+            {
+                m_RaycastOnObject.camera = Camera.main;
+            }
+
             Assert.IsTrue(m_RaycastConstraint.canRaycast, "Set a camera.");
         }
 

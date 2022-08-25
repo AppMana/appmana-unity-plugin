@@ -43,8 +43,7 @@ namespace AppMana.InteractionToolkit
                 "Set a transform or rigidbody on your Positionable");
             if (m_Transform)
             {
-                m_CurrentContext = new TransformPositionContext()
-                    {target = m_Transform, attachmentPosition = attachmentPosition};
+                m_CurrentContext = new TransformPositionContext(m_Transform, attachmentPosition);
             }
             else if (m_Rigidbody)
             {
@@ -62,6 +61,16 @@ namespace AppMana.InteractionToolkit
 
         internal sealed class TransformPositionContext : IPositionContext
         {
+            public TransformPositionContext(Transform target, Vector3? attachmentPosition = null)
+            {
+                this.target = target;
+                this.attachmentPosition = attachmentPosition;
+                if (attachmentPosition != null)
+                {
+                    m_Offset = target.position - attachmentPosition.Value;
+                }
+            }
+
             public Transform target { get; set; }
 
             public void OnCompleted()
@@ -74,11 +83,13 @@ namespace AppMana.InteractionToolkit
 
             public void OnNext(Vector3 value)
             {
-                target.position = value;
+                target.position = value + m_Offset;
             }
 
             public Vector3 position => target.position;
             public Vector3? attachmentPosition { get; set; }
+
+            private Vector3 m_Offset;
         }
 
         internal sealed class RigidbodyPositionContext : IPositionContext
@@ -92,7 +103,8 @@ namespace AppMana.InteractionToolkit
             private Subject<Vector3> m_Positions = new Subject<Vector3>();
             private readonly CompositeDisposable m_Loops = new CompositeDisposable();
 
-            public RigidbodyPositionContext(Rigidbody rigidbody, bool useKinematic, float damping, float force, Vector3? attachmentPosition)
+            public RigidbodyPositionContext(Rigidbody rigidbody, bool useKinematic, float damping, float force,
+                Vector3? attachmentPosition)
             {
                 this.rigidbody = rigidbody;
                 this.useKinematic = useKinematic;
