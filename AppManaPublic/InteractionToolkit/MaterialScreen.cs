@@ -377,6 +377,16 @@ namespace AppMana.InteractionToolkit
             }
         }
 
+        public void Show()
+        {
+            Transition();
+        }
+        
+        public void Transition()
+        {
+            screenView.Transition(this);
+        }
+        
         public void TransitionIn()
         {
             CheckValues();

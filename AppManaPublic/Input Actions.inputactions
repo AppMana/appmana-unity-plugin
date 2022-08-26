@@ -61,21 +61,21 @@
                 },
                 {
                     "name": "MiddleClick",
-                    "type": "Button",
+                    "type": "PassThrough",
                     "id": "dad70c86-b58c-4b17-88ad-f5e53adf419e",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 },
                 {
                     "name": "RightClick",
-                    "type": "Button",
+                    "type": "PassThrough",
                     "id": "44b200b1-1557-4083-816c-b22cbdf77ddf",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 },
                 {
                     "name": "TrackedDevicePosition",

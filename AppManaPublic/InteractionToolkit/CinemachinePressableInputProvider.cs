@@ -16,8 +16,9 @@ namespace AppMana.InteractionToolkit
         MonoBehaviour
 #endif
     {
+#pragma warning disable CS0414
         [SerializeField] private float m_ScrollWheelMultiplier = 0.1f;
-
+#pragma warning restore
         [SerializeField,
          Tooltip(
              "Set this to a UI/Click action, and users will need to press a pointer button / touch in order to orbit.")]
