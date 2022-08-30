@@ -1,4 +1,5 @@
 ﻿using UnityEditor;
+using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace AppManaPublic.Editor
@@ -21,6 +22,7 @@ namespace AppManaPublic.Editor
             PlayerSettings.MTRendering = true;
             PlayerSettings.graphicsJobs = true;
             PlayerSettings.graphicsJobMode = GraphicsJobMode.Native;
+            PlayerSettings.colorSpace = ColorSpace.Linear;
         }
     }
 }
