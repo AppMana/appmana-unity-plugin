@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.Scripting;
@@ -17,10 +18,7 @@ namespace AppManaPublic.Configuration
 
         [SerializeField, Tooltip("Set this to canvas scalers for the player's canvas, used to adjust display DPI")]
         private CanvasScaler[] m_CanvasScalers = new CanvasScaler[0];
-
-        [SerializeField, Tooltip("Specify a design scale for your UI - typically this is 1.0, 2.0 or 3.0")]
-        private float m_BaseScale = 1f;
-
+        
         [SerializeField, Tooltip("Called when this player connects to the experience")]
         private UnityEvent m_OnPlayerConnected;
 
@@ -33,6 +31,10 @@ namespace AppManaPublic.Configuration
 
         [SerializeField, Tooltip("Contact us for editor streaming support")]
         private bool m_EnableStreamingInEditor;
+        
+        [Header("Obsolete")]
+        [SerializeField, Tooltip("(Obsolete) Specify a design scale for your UI - typically this is 1.0, 2.0 or 3.0")]
+        private float m_BaseScale = 1f;
 
         /// <summary>
         /// Set to <c>true</c> when we're in editor and a player connected invocation was requested.
@@ -45,9 +47,10 @@ namespace AppManaPublic.Configuration
 
         public UnityEvent onPlayerDisconnected => m_OnPlayerDisconnected;
 
+        [Obsolete]
         public float baseScale => m_BaseScale;
 
-        public Camera camera1
+        public new Camera camera
         {
             get => m_Camera;
             set => m_Camera = value;

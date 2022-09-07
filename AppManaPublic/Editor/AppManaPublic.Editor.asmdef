@@ -3,9 +3,7 @@
     "rootNamespace": "",
     "references": [
         "UnityEditor.UI",
-        "UnityEngine.UI",
         "UnityEditor.TestRunner",
-        "UnityEngine.TestRunner",
         "AppManaPublic"
     ],
     "includePlatforms": [
