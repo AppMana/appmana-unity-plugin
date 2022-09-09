@@ -50,6 +50,13 @@ namespace AppManaPublic.Configuration
         [Obsolete]
         public float baseScale => m_BaseScale;
 
+        [Obsolete]
+        public Camera camera1
+        {
+            get => m_Camera;
+            set => m_Camera = value;
+        }
+
         public new Camera camera
         {
             get => m_Camera;
