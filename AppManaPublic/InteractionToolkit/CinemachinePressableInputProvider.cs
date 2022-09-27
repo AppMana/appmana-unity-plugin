@@ -1,8 +1,10 @@
 #if CINEMACHINE
+using System;
 using Cinemachine;
 using UnityEngine.EventSystems;
 #endif
 using System.Collections.Generic;
+using UniRx;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -34,8 +36,17 @@ namespace AppMana.InteractionToolkit
 
             if (m_EnableWhenPressed != null)
             {
-                m_EnableWhenPressed.action.performed += ctx => { pressed = ctx.ReadValueAsButton(); };
-                m_EnableWhenPressed.action.canceled += _ => pressed = false;
+                Observable.FromEvent<InputAction.CallbackContext>(
+                        handler => m_EnableWhenPressed.action.performed += handler,
+                        handler => m_EnableWhenPressed.action.performed -= handler)
+                    .Subscribe(ctx => { pressed = ctx.ReadValueAsButton(); })
+                    .AddTo(this);
+
+                Observable.FromEvent<InputAction.CallbackContext>(
+                        handler => m_EnableWhenPressed.action.canceled += handler,
+                        handler => m_EnableWhenPressed.action.canceled -= handler)
+                    .Subscribe(_ => pressed = false)
+                    .AddTo(this);
             }
 
             for (var i = 0; i <= 2; i++)
@@ -49,28 +60,34 @@ namespace AppMana.InteractionToolkit
                     continue;
                 }
 
-                action.performed += ctx =>
-                {
-                    // mouse buttons and other pointers must be pressed in order to cause
-                    // an orbit
-                    if (!ActionPredicate(axis, ctx, pressed))
+                Observable.FromEvent<InputAction.CallbackContext>(handler => action.performed += handler,
+                        handler => action.performed -= handler)
+                    .Subscribe(ctx =>
                     {
-                        m_Values[axis] = 0f;
-                        return;
-                    }
+                        // mouse buttons and other pointers must be pressed in order to cause
+                        // an orbit
+                        if (!ActionPredicate(axis, ctx, pressed))
+                        {
+                            m_Values[axis] = 0f;
+                            return;
+                        }
 
-                    var value = ctx.ReadValue<Vector2>();
+                        var value = ctx.ReadValue<Vector2>();
 
-                    m_Values[axis] = axis switch
-                    {
-                        0 => value.x,
-                        1 => value.y,
-                        2 => value.y * m_ScrollWheelMultiplier,
-                        _ => 0f
-                    };
-                };
+                        m_Values[axis] = axis switch
+                        {
+                            0 => value.x,
+                            1 => value.y,
+                            2 => value.y * m_ScrollWheelMultiplier,
+                            _ => 0f
+                        };
+                    })
+                    .AddTo(this);
 
-                action.canceled += _ => { m_Values[axis] = 0f; };
+                Observable.FromEvent<InputAction.CallbackContext>(handler => action.canceled += handler,
+                        handler => action.canceled -= handler)
+                    .Subscribe(_ => { m_Values[axis] = 0f; })
+                    .AddTo(this);
             }
         }
 
@@ -80,7 +97,7 @@ namespace AppMana.InteractionToolkit
             {
                 return false;
             }
-            
+
             if (m_EnableWhenPressed != null && !pressed && axis < 2)
             {
                 return false;
