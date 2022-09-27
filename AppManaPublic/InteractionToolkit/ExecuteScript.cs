@@ -1,6 +1,7 @@
 using System;
 using UniRx;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace AppMana.InteractionToolkit
 {
@@ -17,6 +18,7 @@ namespace AppMana.InteractionToolkit
         /// <summary>
         /// The code to execute in your browser
         /// </summary>
+        [Preserve]
         public string script
         {
             get => m_Javascript;
@@ -26,6 +28,7 @@ namespace AppMana.InteractionToolkit
         /// <summary>
         /// Immediately run the code in the browser. Does not block.
         /// </summary>
+        [Preserve]
         public void Execute()
         {
             m_Subject.OnNext(m_Javascript);

@@ -21,7 +21,7 @@ Plastic is supported. For the best experience, use Git.
 {
   "dependencies": {
     // start selection for copy and paste
-    "com.unity.inputsystem": "1.4.1",
+    "com.unity.inputsystem": "1.4.2",
     "com.appmana.unity.public": "https://github.com/AppMana/appmana-unity-plugin.git",
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     "com.neuecc.unirx": "https://github.com/neuecc/UniRx.git?path=Assets/Plugins/UniRx/Scripts",

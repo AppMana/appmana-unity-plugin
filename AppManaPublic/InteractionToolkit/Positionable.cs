@@ -54,7 +54,7 @@ namespace AppMana.InteractionToolkit
             return m_CurrentContext;
         }
 
-        public interface IPositionContext : IObserver<Vector3>
+        public interface IPositionContext : IObserver<Vector3>, IDisposable
         {
             Vector3 position { get; }
         }
@@ -90,6 +90,10 @@ namespace AppMana.InteractionToolkit
             public Vector3? attachmentPosition { get; set; }
 
             private Vector3 m_Offset;
+
+            public void Dispose()
+            {
+            }
         }
 
         internal sealed class RigidbodyPositionContext : IPositionContext
@@ -188,6 +192,12 @@ namespace AppMana.InteractionToolkit
             }
 
             public Vector3 position => rigidbody.position;
+
+            public void Dispose()
+            {
+                m_Positions?.Dispose();
+                m_Loops?.Dispose();
+            }
         }
     }
 }

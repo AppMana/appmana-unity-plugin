@@ -8,6 +8,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.Scripting;
 
 namespace AppMana.InteractionToolkit
 {
@@ -25,15 +26,17 @@ namespace AppMana.InteractionToolkit
         private RaycastConstraint m_RaycastConstraint = RaycastConstraint.xzPlane;
 
         private BoolReactiveProperty m_IsDragging = new();
-        public IReadOnlyReactiveProperty<bool> isDragging => m_IsDragging;
 
-        protected override void Awake()
+        [Preserve] public IReadOnlyReactiveProperty<bool> isDragging => m_IsDragging;
+
+        protected override void Start()
         {
-            base.Awake();
+            base.Start();
             if (!EnhancedTouchSupport.enabled)
             {
                 EnhancedTouchSupport.Enable();
             }
+
             if (!m_Target.valid)
             {
                 var rigidbody = GetComponent<Rigidbody>();
@@ -61,11 +64,6 @@ namespace AppMana.InteractionToolkit
             }
 
             Assert.IsTrue(m_RaycastConstraint.canRaycast, "Set a camera.");
-        }
-
-        protected override void Start()
-        {
-            base.Start();
 
             // drag the object along the surface of the specified constraints
 
@@ -75,22 +73,21 @@ namespace AppMana.InteractionToolkit
             // todo: support something other than new input system
             this.OnBeginDragAsObservable().Subscribe(pointerEventData =>
             {
-                if (pointerEventData is ExtendedPointerEventData extendedPointerEventData)
+                if (pointerEventData is ExtendedPointerEventData {control: Vector2Control draggingOnPointer} extendedPointerEventData)
                 {
-                    if (extendedPointerEventData.control is Vector2Control draggingOnPointer)
-                    {
-                        pointer = draggingOnPointer;
-                        buttons = extendedPointerEventData.control.parent.children.OfType<ButtonControl>().ToArray();
-                        positionContext = m_Target.Position(m_RaycastOnObject.canRaycast
-                            ? m_RaycastOnObject.GetWorldPositionConstrained(pointer.ReadValue())
-                            : null);
-                        m_IsDragging.Value = true;
-                        return;
-                    }
+                    pointer = draggingOnPointer;
+                    buttons = extendedPointerEventData.control.parent.children.OfType<ButtonControl>().ToArray();
+                    positionContext = m_Target.Position(m_RaycastOnObject.canRaycast
+                        ? m_RaycastOnObject.GetWorldPositionConstrained(pointer.ReadValue())
+                        : null);
+                    positionContext.AddTo(this);
+                    m_IsDragging.Value = true;
+                    return;
                 }
 
                 pointer = null;
                 positionContext?.OnCompleted();
+                positionContext?.Dispose();
                 m_IsDragging.Value = false;
                 positionContext = null;
             }).AddTo(this);
@@ -106,7 +103,8 @@ namespace AppMana.InteractionToolkit
                     {
                         pointer = null;
                         buttons = null;
-                        positionContext.OnCompleted();
+                        positionContext?.OnCompleted();
+                        positionContext?.Dispose();
                         positionContext = null;
                         m_IsDragging.Value = false;
                         return;
@@ -121,8 +119,10 @@ namespace AppMana.InteractionToolkit
                     {
                         positionContext.OnNext(desiredPosition.Value);
                     }
+
                     m_IsDragging.Value = true;
-                });
+                })
+                .AddTo(this);
         }
 
 #if UNITY_EDITOR
