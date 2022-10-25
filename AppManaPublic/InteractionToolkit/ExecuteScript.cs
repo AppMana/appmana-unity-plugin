@@ -12,26 +12,24 @@ namespace AppMana.InteractionToolkit
     /// property.
     public class ExecuteScript : MonoBehaviour
     {
-        [SerializeField, Tooltip("The code to execute in your browser")] private string m_Javascript;
+        [SerializeField, Tooltip("The code to execute in your browser"), Multiline(3)]
+        private string m_Javascript;
+
         internal Subject<string> m_Subject = new Subject<string>();
-        
+
         /// <summary>
         /// The code to execute in your browser
         /// </summary>
         [Preserve]
-        public string script
-        {
-            get => m_Javascript;
-            set => m_Javascript = value;
-        }
+        public virtual string script => m_Javascript;
 
         /// <summary>
         /// Immediately run the code in the browser. Does not block.
         /// </summary>
         [Preserve]
-        public void Execute()
+        public virtual void Execute()
         {
-            m_Subject.OnNext(m_Javascript);
+            m_Subject.OnNext(script);
         }
     }
 }
