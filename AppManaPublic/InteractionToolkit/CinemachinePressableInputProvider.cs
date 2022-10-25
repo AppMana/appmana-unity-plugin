@@ -19,13 +19,50 @@ namespace AppMana.InteractionToolkit
 #endif
     {
 #pragma warning disable CS0414
-        [SerializeField] private float m_ScrollWheelMultiplier = 0.1f;
+        [SerializeField] protected float m_ScrollWheelMultiplier = 0.1f;
 #pragma warning restore
         [SerializeField,
          Tooltip(
              "Set this to a UI/Click action, and users will need to press a pointer button / touch in order to orbit.")]
-        private InputActionReference m_EnableWhenPressed;
+        protected InputActionReference m_EnableWhenPressed;
 
+        public virtual float scrollWheelMultiplier
+        {
+            get => m_ScrollWheelMultiplier;
+            set => m_ScrollWheelMultiplier = value;
+        }
+
+        public virtual InputActionReference enableWhenPressed
+        {
+            get => m_EnableWhenPressed;
+            set => m_EnableWhenPressed = value;
+        }
+
+        public virtual float[] values
+        {
+            get => m_Values;
+            set => m_Values = value;
+        }
+
+        public virtual int playerIndex
+        {
+            set => PlayerIndex = value;
+        }
+
+        public virtual bool autoEnableInputs
+        {
+            set => AutoEnableInputs = value;
+        }
+
+        public virtual InputActionReference xyAxis
+        {
+            set => XYAxis = value;
+        }
+
+        public virtual InputActionReference zAxis
+        {
+            set => ZAxis = value;
+        }
 
 #if CINEMACHINE
         private float[] m_Values = new float[3];
@@ -34,17 +71,17 @@ namespace AppMana.InteractionToolkit
         {
             var pressed = false;
 
-            if (m_EnableWhenPressed != null)
+            if (enableWhenPressed)
             {
                 Observable.FromEvent<InputAction.CallbackContext>(
-                        handler => m_EnableWhenPressed.action.performed += handler,
-                        handler => m_EnableWhenPressed.action.performed -= handler)
+                        handler => enableWhenPressed.action.performed += handler,
+                        handler => enableWhenPressed.action.performed -= handler)
                     .Subscribe(ctx => { pressed = ctx.ReadValueAsButton(); })
                     .AddTo(this);
 
                 Observable.FromEvent<InputAction.CallbackContext>(
-                        handler => m_EnableWhenPressed.action.canceled += handler,
-                        handler => m_EnableWhenPressed.action.canceled -= handler)
+                        handler => enableWhenPressed.action.canceled += handler,
+                        handler => enableWhenPressed.action.canceled -= handler)
                     .Subscribe(_ => pressed = false)
                     .AddTo(this);
             }
@@ -68,17 +105,17 @@ namespace AppMana.InteractionToolkit
                         // an orbit
                         if (!ActionPredicate(axis, ctx, pressed))
                         {
-                            m_Values[axis] = 0f;
+                            values[axis] = 0f;
                             return;
                         }
 
                         var value = ctx.ReadValue<Vector2>();
 
-                        m_Values[axis] = axis switch
+                        values[axis] = axis switch
                         {
                             0 => value.x,
                             1 => value.y,
-                            2 => value.y * m_ScrollWheelMultiplier,
+                            2 => value.y * scrollWheelMultiplier,
                             _ => 0f
                         };
                     })
@@ -98,7 +135,7 @@ namespace AppMana.InteractionToolkit
                 return false;
             }
 
-            if (m_EnableWhenPressed != null && !pressed && axis < 2)
+            if (enableWhenPressed != null && !pressed && axis < 2)
             {
                 return false;
             }
@@ -108,7 +145,7 @@ namespace AppMana.InteractionToolkit
 
         public override float GetAxisValue(int axis)
         {
-            return m_Values[axis];
+            return values[axis];
         }
 #endif
     }
