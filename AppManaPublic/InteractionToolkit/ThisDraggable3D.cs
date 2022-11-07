@@ -53,32 +53,26 @@ namespace AppMana.InteractionToolkit
 
             Assert.IsTrue(m_Target.valid, "Configure the target to set how the object should be moved");
             Assert.IsTrue(m_RaycastConstraint.hasConstraint, "Choose where to constrain the motion to.");
-            if (m_RaycastConstraint.camera == null)
-            {
-                m_RaycastConstraint.camera = Camera.main;
-            }
-
-            if (m_RaycastOnObject.camera == null)
-            {
-                m_RaycastOnObject.camera = Camera.main;
-            }
-
-            Assert.IsTrue(m_RaycastConstraint.canRaycast, "Set a camera.");
 
             // drag the object along the surface of the specified constraints
 
             var pointer = (Vector2Control)null;
             var buttons = (ButtonControl[])null;
+            var camera = (Camera)null;
             var positionContext = (Positionable.IPositionContext)null;
             // todo: support something other than new input system
             this.OnBeginDragAsObservable().Subscribe(pointerEventData =>
             {
-                if (pointerEventData is ExtendedPointerEventData {control: Vector2Control draggingOnPointer} extendedPointerEventData)
+                camera = pointerEventData.enterEventCamera ?? pointerEventData.pressEventCamera ?? Camera.main;
+                if (pointerEventData is ExtendedPointerEventData
+                    {
+                        control: Vector2Control draggingOnPointer
+                    } extendedPointerEventData)
                 {
                     pointer = draggingOnPointer;
-                    buttons = extendedPointerEventData.control.parent.children.OfType<ButtonControl>().ToArray();
+                    buttons = draggingOnPointer.parent.children.OfType<ButtonControl>().ToArray();
                     positionContext = m_Target.Position(m_RaycastOnObject.canRaycast
-                        ? m_RaycastOnObject.GetWorldPositionConstrained(pointer.ReadValue())
+                        ? m_RaycastOnObject.GetWorldPositionConstrained(pointer.ReadValue(), camera: camera)
                         : null);
                     positionContext.AddTo(this);
                     m_IsDragging.Value = true;
@@ -86,6 +80,7 @@ namespace AppMana.InteractionToolkit
                 }
 
                 pointer = null;
+                camera = null;
                 positionContext?.OnCompleted();
                 positionContext?.Dispose();
                 m_IsDragging.Value = false;
@@ -103,6 +98,7 @@ namespace AppMana.InteractionToolkit
                     {
                         pointer = null;
                         buttons = null;
+                        camera = null;
                         positionContext?.OnCompleted();
                         positionContext?.Dispose();
                         positionContext = null;
@@ -114,7 +110,7 @@ namespace AppMana.InteractionToolkit
                     var pointerPosition = pointer.ReadValue();
                     var currentPosition = positionContext.position;
                     var desiredPosition =
-                        m_RaycastConstraint.GetWorldPositionConstrained(pointerPosition, currentPosition);
+                        m_RaycastConstraint.GetWorldPositionConstrained(pointerPosition, currentPosition, camera);
                     if (desiredPosition != null)
                     {
                         positionContext.OnNext(desiredPosition.Value);

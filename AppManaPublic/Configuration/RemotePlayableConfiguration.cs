@@ -1,7 +1,9 @@
 ﻿using System;
+using AppMana.Multiplayer;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.Scripting;
 using UnityEngine.UI;
 
@@ -31,6 +33,9 @@ namespace AppManaPublic.Configuration
 
         [SerializeField, Tooltip("Contact us for editor streaming support")]
         private bool m_EnableStreamingInEditor;
+
+        [Header("Experimental")]
+        [SerializeField] private StreamedPlayer m_StreamedPlayer;
         
         [Header("Obsolete")]
         [SerializeField, Tooltip("(Obsolete) Specify a design scale for your UI - typically this is 1.0, 2.0 or 3.0")]
@@ -46,6 +51,9 @@ namespace AppManaPublic.Configuration
         public UnityEvent onPlayerConnected => m_OnPlayerConnected;
 
         public UnityEvent onPlayerDisconnected => m_OnPlayerDisconnected;
+
+
+        public StreamedPlayer player => m_StreamedPlayer;
 
         [Obsolete]
         public float baseScale => m_BaseScale;

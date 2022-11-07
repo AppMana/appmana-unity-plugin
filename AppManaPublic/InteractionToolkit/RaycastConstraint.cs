@@ -14,9 +14,7 @@ namespace AppMana.InteractionToolkit
     {
         internal const int defaultMaxRaycastHits = 20;
         internal const float defaultMaxDistanceForAllRays = 1000f;
-        [Header("Common")]
-        [SerializeField] private Camera m_Camera;
-        [SerializeField] private Vector3 m_WorldOffset;
+        [Header("Common")] [SerializeField] private Vector3 m_WorldOffset;
 
         // planes
         [Header("Local Plane Option")] [SerializeField]
@@ -27,6 +25,8 @@ namespace AppMana.InteractionToolkit
 
         [Header("Camera Plane Option")] [SerializeField]
         private bool m_ConstrainToCameraPlane;
+
+        [SerializeField] private Camera m_CameraForPlane;
 
         [Header("Common Plane Settings")] [SerializeField]
         private Vector3 m_PlaneVector;
@@ -53,12 +53,6 @@ namespace AppMana.InteractionToolkit
         private RaycastHit[] m_RaycastHits1;
         private RaycastHit[] m_RaycastHits2;
 
-        public Camera camera
-        {
-            get => m_Camera;
-            set => m_Camera = value;
-        }
-
         public Plane plane
         {
             get
@@ -83,7 +77,9 @@ namespace AppMana.InteractionToolkit
 
                 if (m_ConstrainToCameraPlane)
                 {
-                    return new Plane(m_Camera.transform.TransformVector(m_PlaneVector),
+                    Assert.IsNotNull(m_CameraForPlane, "Must specify a camera");
+
+                    return new Plane(m_CameraForPlane.transform.TransformVector(m_PlaneVector),
                         m_LocalTransform.TransformPoint(m_PlanePosition));
                 }
 
@@ -94,27 +90,28 @@ namespace AppMana.InteractionToolkit
         public bool hasConstraint => m_ConstrainToLocalPlane || m_ConstrainToWorldPlane || m_ConstrainToCameraPlane ||
                                      m_ConstrainOnColliderSurfaces || m_ConstrainToCollidersByLayerMask;
 
-        public bool canRaycast => hasConstraint && m_Camera != null;
+        public bool canRaycast => hasConstraint;
 
-        public Vector3? GetWorldPositionConstrained(Vector2 position, Vector3? nearWorldPosition = null)
+        public Vector3? GetWorldPositionConstrained(Vector2 position, Vector3? nearWorldPosition = null,
+            Camera camera = null)
         {
-            if (m_Camera == null)
+            if (camera == null)
             {
-                m_Camera = Camera.current ?? Camera.main;
+                camera = Camera.current ?? Camera.main;
             }
 
-            Assert.IsNotNull(m_Camera, "Set a camera on the constraint to retrieve world positions");
-            var ray = m_Camera.ScreenPointToRay(position);
+            Assert.IsNotNull(camera, "Set a camera on the constraint to retrieve world positions");
+            var ray = camera.ScreenPointToRay(position);
             // todo: choose a logical current position
-            var currentPosition = nearWorldPosition ?? m_Camera.ScreenToWorldPoint(new Vector3(position.x, position.y,
-                (m_Camera.farClipPlane + m_Camera.nearClipPlane) / 2f));
+            var currentPosition = nearWorldPosition ?? camera.ScreenToWorldPoint(new Vector3(position.x, position.y,
+                (camera.farClipPlane + camera.nearClipPlane) / 2f));
 
             var planePosition = new Vector3[0];
             if (m_ConstrainToLocalPlane || m_ConstrainToWorldPlane || m_ConstrainToCameraPlane)
             {
                 if (plane.Raycast(ray, out var distance))
                 {
-                    planePosition = new[] {ray.GetPoint(distance)};
+                    planePosition = new[] { ray.GetPoint(distance) };
                 }
             }
 
@@ -141,14 +138,14 @@ namespace AppMana.InteractionToolkit
                     .Concat(m_RaycastHits2.Take(size2).Where(hit => finalColliderSet.Contains(hit.collider)))
                     .Select(hit => hit.point))
                 .OrderBy(hit => (hit - currentPosition).sqrMagnitude)
-                .Select(hit => (Vector3?) hit)
+                .Select(hit => (Vector3?)hit)
                 .FirstOrDefault();
-            
+
             if (worldPositionConstrained != null)
             {
                 worldPositionConstrained += m_WorldOffset;
             }
-            
+
             return worldPositionConstrained;
         }
 
