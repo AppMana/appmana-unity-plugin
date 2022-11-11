@@ -38,11 +38,9 @@ Plastic is supported. For the best experience, use Git.
 
 This example will help you make a 2 player multiplayer game where each player has her own camera and interaction is done with 3D objects and the canvas.
 
- 1. Add a `StreamedMultiplayer` component to your scene.
- 2. Create two layers: `Player1` and `Player2`. These will be used to limit objects to be interactable only by the layer's corresponding players. 
- 3. Create a **Player** prefab, and create 2 instances of it in your scene. Both should be active.
-    1. In this prefab, add a `RemotePlayableConfiguration` and a `StreamedPlayer` to its root.
-       1. Set **Actions** on `StreamedPlayer` to the **Input Actions** asset located in `Packages/AppMana Unity Plugin` in your Project tab. Due to a Unity Editor quirk, you cannot locate this asset by clocking the Find button in the inspector.
+ 1. Create two layers: `Player1` and `Player2`. These will be used to limit objects to be interactable only by the layer's corresponding players. 
+ 2. Create a **Player** prefab, and create 2 instances of it in your scene. Both should be active.
+    1. In this prefab, add a `RemotePlayableConfiguration`. to its root.
     2. Add a camera and a `PhysicsRaycaster` to a child game object.
        1. Set the **Camera** on the `RemotePlayableConfiguration` to the camera you created.
        2. To limit the player to interacting with only certain objects in the scene, set the **Event Mask** property to `Player1` (created earlier).
