@@ -22,6 +22,19 @@ namespace AppMana.Multiplayer
     {
         private int m_DisplayIndex = -1;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void Inject()
+        {
+            var players = FindObjectsOfType<RemotePlayableConfiguration>(true);
+            if (players.Length <= 1)
+            {
+                return;
+            }
+
+            var gameObject = new GameObject($"({nameof(StreamedMultiplayer)})");
+            gameObject.AddComponent<StreamedMultiplayer>();
+        }
+
         protected override void Start()
         {
             base.Start();
@@ -30,7 +43,7 @@ namespace AppMana.Multiplayer
             // find the player inputs
             var playerGameObjects = string.Join(", ", players.Select(player => player.gameObject.name));
             Assert.AreEqual(players.Length,
-                players.Select(player => player.player).Where(playerInput => playerInput != null).Distinct()
+                players.Select(player => player).Where(playerInput => playerInput != null).Distinct()
                     .Count(),
                 $"Assign each {nameof(RemotePlayableConfiguration)} on {playerGameObjects} a distinct {nameof(PlayerInput)}");
 
@@ -81,10 +94,12 @@ namespace AppMana.Multiplayer
 
             // create a fake mouse device for each player
             var displayToMouse = players
+                // players that have streaming enabled in editor will be connected via an offer
+                .Where(player => !player.enableStreamingInEditor)
                 .Select(player =>
                 {
-                    var mouse = InputSystem.AddDevice<Mouse>($"MouseEditorPlayer{player.player.user.id}");
-                    player.player.PerformPairingWithDevice(mouse);
+                    var mouse = InputSystem.AddDevice<Mouse>($"MouseEditorPlayer{player.user.id}");
+                    player.PerformPairingWithDevice(mouse);
                     mouse.AddTo(this);
                     return (player, mouse);
                 })
@@ -93,7 +108,7 @@ namespace AppMana.Multiplayer
             // unpair pre-existing (editor) devices
             foreach (var player in players)
             {
-                var user = player.player.user;
+                var user = player.user;
                 if (!user.valid)
                 {
                     continue;
@@ -176,6 +191,11 @@ namespace AppMana.Multiplayer
                         return;
                     }
 
+                    if (!displayToMouse.ContainsKey(m_DisplayIndex))
+                    {
+                        return;
+                    }
+                    
                     var targetDevice = displayToMouse[m_DisplayIndex];
 
                     unsafe

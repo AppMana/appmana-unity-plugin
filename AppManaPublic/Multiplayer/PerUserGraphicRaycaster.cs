@@ -24,7 +24,7 @@ namespace AppMana.Multiplayer
             if (eventData is ExtendedPointerEventData extendedPointerEventData)
             {
                 var user = InputUser.FindUserPairedToDevice(extendedPointerEventData.device);
-                if (m_RemotePlayableConfiguration?.player?.user != user)
+                if (m_RemotePlayableConfiguration?.user != user)
                 {
                     return;
                 }

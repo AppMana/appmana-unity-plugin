@@ -1,9 +1,10 @@
 ﻿using System;
-using AppMana.Multiplayer;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Users;
 using UnityEngine.Scripting;
 using UnityEngine.UI;
 
@@ -18,9 +19,11 @@ namespace AppManaPublic.Configuration
         [SerializeField, Tooltip("Set this to the audio listener for this player, or leave null to disable audio")]
         private AudioListener m_AudioListener;
 
+        [SerializeField] private InputActionAsset m_Actions;
+
         [SerializeField, Tooltip("Set this to canvas scalers for the player's canvas, used to adjust display DPI")]
         private CanvasScaler[] m_CanvasScalers = new CanvasScaler[0];
-        
+
         [SerializeField, Tooltip("Called when this player connects to the experience")]
         private UnityEvent m_OnPlayerConnected;
 
@@ -32,11 +35,8 @@ namespace AppManaPublic.Configuration
         private Transform m_InputsOnlyAffectThisHierarchyOrAny;
 
         [SerializeField, Tooltip("Contact us for editor streaming support")]
-        private bool m_EnableStreamingInEditor;
+        private bool m_StreamInEditMode;
 
-        [Header("Experimental")]
-        [SerializeField] private StreamedPlayer m_StreamedPlayer;
-        
         [Header("Obsolete")]
         [SerializeField, Tooltip("(Obsolete) Specify a design scale for your UI - typically this is 1.0, 2.0 or 3.0")]
         private float m_BaseScale = 1f;
@@ -51,12 +51,54 @@ namespace AppManaPublic.Configuration
         public UnityEvent onPlayerConnected => m_OnPlayerConnected;
 
         public UnityEvent onPlayerDisconnected => m_OnPlayerDisconnected;
+        private InputUser m_User;
+        internal InputUser user => m_User;
+        private int m_Index;
 
+        internal int index => m_Index;
 
-        public StreamedPlayer player => m_StreamedPlayer;
+        private static int m_Counter = -1;
 
-        [Obsolete]
-        public float baseScale => m_BaseScale;
+        protected override void Awake()
+        {
+            m_Index = Interlocked.Increment(ref m_Counter);
+            base.Awake();
+
+            var count = FindObjectsOfType<RemotePlayableConfiguration>(true).Length;
+
+            if (m_Actions == null)
+            {
+                if (count > 1)
+                {
+                    Debug.LogWarning(
+                        $"Set {nameof(m_Actions)} on this object.",
+                        this);
+                }
+
+                return;
+            }
+
+            // clone the actions
+            var newActionsName = m_Actions.name;
+            m_Actions = Instantiate(m_Actions);
+            m_Actions.name = $"{newActionsName} for Player {m_User.id}";
+
+            // associate with a user, multiple players
+            if (count <= 1)
+            {
+                return;
+            }
+
+            m_User = InputUser.CreateUserWithoutPairedDevices();
+            m_User.AssociateActionsWithUser(m_Actions);
+        }
+
+        internal void PerformPairingWithDevice(InputDevice device)
+        {
+            m_User = InputUser.PerformPairingWithDevice(device, m_User);
+        }
+
+        [Obsolete] public float baseScale => m_BaseScale;
 
         [Obsolete]
         public Camera camera1
@@ -80,6 +122,7 @@ namespace AppManaPublic.Configuration
         public CanvasScaler[] canvasScalers => m_CanvasScalers;
 
         public Transform inputsOnlyAffectThisHierarchyOrAny => m_InputsOnlyAffectThisHierarchyOrAny;
+        internal bool enableStreamingInEditor => m_StreamInEditMode;
 
         protected override void Start()
         {
@@ -93,7 +136,7 @@ namespace AppManaPublic.Configuration
 
         protected override void OnEnable()
         {
-            if (Application.isEditor && !m_EnableStreamingInEditor)
+            if (Application.isEditor && !m_StreamInEditMode)
             {
                 if (!m_DidCallInStart)
                 {
@@ -113,7 +156,7 @@ namespace AppManaPublic.Configuration
 
         protected override void OnDisable()
         {
-            if (Application.isEditor && !m_EnableStreamingInEditor)
+            if (Application.isEditor && !m_StreamInEditMode)
             {
                 m_OnPlayerDisconnected.Invoke();
                 return;
