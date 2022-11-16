@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using AppManaPublic.Configuration;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.InputSystem.Users;
 using UnityEngine.UI;
@@ -11,6 +11,23 @@ namespace AppMana.Multiplayer
 {
     public class PerUserGraphicRaycaster : GraphicRaycaster
     {
+        private static FieldInfo activeEditorGameViewTargetField { get; }
+
+        static PerUserGraphicRaycaster()
+        {
+            if (Application.isEditor)
+            {
+                var displayType = typeof(Display);
+                activeEditorGameViewTargetField = displayType.GetField("m_ActiveEditorGameViewTarget",
+                    BindingFlags.Static | BindingFlags.NonPublic);
+            }
+            else
+            {
+                activeEditorGameViewTargetField = null;
+            }
+        }
+
+
         [SerializeField] private RemotePlayableConfiguration m_RemotePlayableConfiguration;
 
         public RemotePlayableConfiguration remotePlayableConfiguration
@@ -27,6 +44,23 @@ namespace AppMana.Multiplayer
                 if (m_RemotePlayableConfiguration?.user != user)
                 {
                     return;
+                }
+            }
+
+            if (eventCamera == null)
+            {
+                Debug.LogWarning($"Graphic raycaster on {gameObject.name} had a null event camera but a graphic raycaster");
+            }
+            else
+            {
+                if (Application.isEditor)
+                {
+                    activeEditorGameViewTargetField.SetValue(null, eventCamera.targetDisplay);
+                }
+                else
+                {
+                    // the camera's target display should always be zero, to pass the graphic raycaster issue here
+                    eventCamera.targetDisplay = 0;
                 }
             }
 
