@@ -55,7 +55,7 @@ namespace AppMana.Multiplayer
                 var physicsRaycaster = player.camera.GetComponent<PhysicsRaycaster>();
                 if (physicsRaycaster != null)
                 {
-                    var replacement = player.camera.gameObject.AddComponent<PerUserPhysicsRaycaster>();
+                    var replacement = physicsRaycaster.gameObject.AddComponent<PerUserPhysicsRaycaster>();
                     replacement.eventMask = physicsRaycaster.eventMask;
                     replacement.remotePlayableConfiguration = player;
                     replacement.maxRayIntersections = physicsRaycaster.maxRayIntersections;
@@ -66,7 +66,7 @@ namespace AppMana.Multiplayer
                 var physics2dRaycaster = player.camera.GetComponent<Physics2DRaycaster>();
                 if (physics2dRaycaster != null)
                 {
-                    var replacement = player.camera.gameObject.AddComponent<PerUserPhysics2DRaycaster>();
+                    var replacement = physics2dRaycaster.gameObject.AddComponent<PerUserPhysics2DRaycaster>();
                     replacement.eventMask = physics2dRaycaster.eventMask;
                     replacement.remotePlayableConfiguration = player;
                     replacement.maxRayIntersections = physics2dRaycaster.maxRayIntersections;
@@ -77,7 +77,7 @@ namespace AppMana.Multiplayer
                 var canvasRaycasters = player.camera.GetComponentsInChildren<GraphicRaycaster>(true);
                 foreach (var canvasRaycaster in canvasRaycasters)
                 {
-                    var replacement = player.camera.gameObject.AddComponent<PerUserGraphicRaycaster>();
+                    var replacement = canvasRaycaster.gameObject.AddComponent<PerUserGraphicRaycaster>();
                     replacement.blockingMask = canvasRaycaster.blockingMask;
                     replacement.blockingObjects = canvasRaycaster.blockingObjects;
                     replacement.ignoreReversedGraphics = canvasRaycaster.ignoreReversedGraphics;

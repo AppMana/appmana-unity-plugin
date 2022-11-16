@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.InputSystem.Users;
 using UnityEngine.Scripting;
 using UnityEngine.UI;
@@ -59,6 +60,8 @@ namespace AppManaPublic.Configuration
 
         private static int m_Counter = -1;
 
+        public InputActionAsset actions => m_Actions;
+
         protected override void Awake()
         {
             m_Index = Interlocked.Increment(ref m_Counter);
@@ -70,8 +73,17 @@ namespace AppManaPublic.Configuration
             {
                 if (count > 1)
                 {
+                    // if there is a PlayerInput, warn that using it is a misconfiguration
+                    var playerInput = camera.GetComponentInChildren<PlayerInput>();
+                    if (playerInput != null)
+                    {
+                        Debug.LogError(
+                            $"In a multiplayer game, {nameof(RemotePlayableConfiguration)} replaces {nameof(PlayerInput)}. Remove the {nameof(PlayerInput)} attached to {playerInput.gameObject.name}",
+                            playerInput);
+                    }
+
                     Debug.LogWarning(
-                        $"Set {nameof(m_Actions)} on this object.",
+                        $"Set the Actions field on this object.",
                         this);
                 }
 
@@ -91,6 +103,15 @@ namespace AppManaPublic.Configuration
 
             m_User = InputUser.CreateUserWithoutPairedDevices();
             m_User.AssociateActionsWithUser(m_Actions);
+            
+            // Find the input modules associated with this user
+            // todo: make this configurable
+            foreach (var inputSystemUIModule in GetComponentsInChildren<InputSystemUIInputModule>(true))
+            {
+                // this automatically finds the corresponding actions, if they exist
+                inputSystemUIModule.actionsAsset = m_Actions;
+            }
+            m_Actions.Enable();
         }
 
         internal void PerformPairingWithDevice(InputDevice device)
