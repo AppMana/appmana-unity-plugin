@@ -15,7 +15,7 @@ namespace AppManaPublic.Editor
             PlayerSettings.SetAdditionalIl2CppArgs("--generic-virtual-method-iterations=2");
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneWindows64, false);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneWindows64,
-                new[] {GraphicsDeviceType.Direct3D12, GraphicsDeviceType.Direct3D11, GraphicsDeviceType.Vulkan});
+                new[] { GraphicsDeviceType.Direct3D11, GraphicsDeviceType.Direct3D12, GraphicsDeviceType.Vulkan });
             PlayerSettings.runInBackground = true;
             PlayerSettings.SplashScreen.show = false;
             PlayerSettings.assemblyVersionValidation = false;
