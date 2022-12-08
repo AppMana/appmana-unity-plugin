@@ -37,9 +37,8 @@ namespace AppManaPublic.Configuration
 
         [SerializeField, Tooltip("Contact us for editor streaming support")]
         private bool m_StreamInEditMode;
-
-        [Header("Obsolete")]
-        [SerializeField, Tooltip("(Obsolete) Specify a design scale for your UI - typically this is 1.0, 2.0 or 3.0")]
+        
+        [SerializeField, HideInInspector, Obsolete]
         private float m_BaseScale = 1f;
 
         /// <summary>
