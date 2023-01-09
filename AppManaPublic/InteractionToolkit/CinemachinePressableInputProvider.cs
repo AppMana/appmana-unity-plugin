@@ -37,7 +37,8 @@ namespace AppMana.InteractionToolkit
             get => m_EnableWhenPressed;
             set => m_EnableWhenPressed = value;
         }
-
+        
+#if CINEMACHINE
         public virtual float[] values
         {
             get => m_Values;
@@ -64,7 +65,6 @@ namespace AppMana.InteractionToolkit
             set => ZAxis = value;
         }
 
-#if CINEMACHINE
         private float[] m_Values = new float[3];
 
         protected virtual void Start()

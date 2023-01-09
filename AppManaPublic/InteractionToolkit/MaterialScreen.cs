@@ -1,13 +1,10 @@
-﻿//  Copyright 2016 MaterialUI for Unity http://materialunity.com
-//  Please see license file for terms and conditions of use, and more information.
-
-using AppMana.InteractionToolkit.Animation;
+﻿using AppMana.InteractionToolkit.Animation;
 using AppMana.InteractionToolkit.MaterialUI;
 using UnityEngine;
 
 namespace AppMana.InteractionToolkit
 {
-    [AddComponentMenu("MaterialUI/Material Screen", 100)]
+    [AddComponentMenu("UI/Screen", 101)]
     public class MaterialScreen : MonoBehaviour
     {
         [SerializeField]
