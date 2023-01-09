@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
@@ -37,7 +38,7 @@ namespace AppManaPublic.Configuration
 
         [SerializeField, Tooltip("Contact us for editor streaming support")]
         private bool m_StreamInEditMode;
-        
+
         [SerializeField, HideInInspector, Obsolete]
         private float m_BaseScale = 1f;
 
@@ -65,6 +66,19 @@ namespace AppManaPublic.Configuration
         {
             m_Index = Interlocked.Increment(ref m_Counter);
             base.Awake();
+
+            // perform checks for common mistakes and tries to resolve them automatically
+            // check for screen space overlay canvases
+            foreach (var canvas in FindObjectsOfType<Canvas>(true)
+                         .Where(canvas => canvas.renderMode == RenderMode.ScreenSpaceOverlay))
+            {
+                var guessCamera = canvas.GetComponentInParent<Camera>();
+                canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                canvas.worldCamera = guessCamera ?? Camera.main;
+                Debug.LogWarning(
+                    $"A Screen Space Overlay canvas was found and is not supported by AppMana by the name of {canvas.gameObject.name}. Switching to {nameof(RenderMode.ScreenSpaceCamera)} and using camera {camera?.gameObject.name ?? "(not found)"}",
+                    canvas);
+            }
 
             var count = FindObjectsOfType<RemotePlayableConfiguration>(true).Length;
 
@@ -102,7 +116,7 @@ namespace AppManaPublic.Configuration
 
             m_User = InputUser.CreateUserWithoutPairedDevices();
             m_User.AssociateActionsWithUser(m_Actions);
-            
+
             // Find the input modules associated with this user
             // todo: make this configurable
             foreach (var inputSystemUIModule in GetComponentsInChildren<InputSystemUIInputModule>(true))
@@ -110,6 +124,7 @@ namespace AppManaPublic.Configuration
                 // this automatically finds the corresponding actions, if they exist
                 inputSystemUIModule.actionsAsset = m_Actions;
             }
+
             m_Actions.Enable();
         }
 
