@@ -4,7 +4,8 @@
     "references": [
         "UnityEditor.UI",
         "UnityEditor.TestRunner",
-        "AppManaPublic"
+        "AppManaPublic",
+        "Unity.TextMeshPro.Editor"
     ],
     "includePlatforms": [
         "Editor"
@@ -15,6 +16,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.textmeshpro",
+            "expression": "",
+            "define": "TMP_EDITOR"
+        }
+    ],
     "noEngineReferences": false
 }

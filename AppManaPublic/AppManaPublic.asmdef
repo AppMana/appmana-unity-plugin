@@ -6,7 +6,8 @@
         "UniRx",
         "Cinemachine",
         "UnityEditor.UI",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -30,6 +31,11 @@
             "name": "com.unity.cinemachine",
             "expression": "",
             "define": "CINEMACHINE"
+        },
+        {
+            "name": "com.unity.textmeshpro",
+            "expression": "",
+            "define": "TMP"
         }
     ],
     "noEngineReferences": false
