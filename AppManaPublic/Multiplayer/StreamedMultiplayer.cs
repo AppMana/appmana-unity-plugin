@@ -18,9 +18,30 @@ using Observable = UniRx.Observable;
 
 namespace AppMana.Multiplayer
 {
+    /// <summary>
+    /// Enables streaming multiplayer in an AppMana-hosted Unity game.
+    /// </summary>
+    /// Use the singleton accessible from <see cref="instance"/> to make multiplayer-specific API calls against the
+    /// AppMana backend.
+    [DefaultExecutionOrder(-1000)]
     public class StreamedMultiplayer : UIBehaviour
     {
+        public static StreamedMultiplayer instance { get; private set; }
         private int m_DisplayIndex = -1;
+        private AppManaHostBase m_AppManaHostBase;
+
+        private AppManaHostBase appManaHostBase
+        {
+            get
+            {
+                if (!m_AppManaHostBase)
+                {
+                    m_AppManaHostBase = FindObjectOfType<AppManaHostBase>();
+                }
+
+                return m_AppManaHostBase;
+            }
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Inject()
@@ -33,6 +54,12 @@ namespace AppMana.Multiplayer
 
             var gameObject = new GameObject($"({nameof(StreamedMultiplayer)})");
             gameObject.AddComponent<StreamedMultiplayer>();
+        }
+
+        protected override void Awake()
+        {
+            base.Awake();
+            instance = this;
         }
 
         protected override void Start()
@@ -148,7 +175,7 @@ namespace AppMana.Multiplayer
                             return;
                         }
 
-                        displayId = (int)displayField.GetValue(mouseOverWindow);
+                        displayId = (int) displayField.GetValue(mouseOverWindow);
                     }
 
                     if (mouseOverWindow != null && displayId != m_DisplayIndex && displayId != -1)
@@ -175,7 +202,7 @@ namespace AppMana.Multiplayer
                     unsafe
                     {
                         var stateEventPtr = StateEvent.From(inputEventPtr);
-                        var mouseState = (MouseState*)stateEventPtr->state;
+                        var mouseState = (MouseState*) stateEventPtr->state;
                         mouseState->buttons = 0;
                     }
                 })
@@ -195,7 +222,7 @@ namespace AppMana.Multiplayer
                     {
                         return;
                     }
-                    
+
                     var targetDevice = displayToMouse[m_DisplayIndex];
 
                     unsafe
@@ -209,6 +236,20 @@ namespace AppMana.Multiplayer
                 })
                 .AddTo(this);
 #endif
+        }
+
+        /// <summary>
+        /// Closes the lobby. No more players can join the game.
+        /// </summary>
+        public void CloseLobby()
+        {
+            if (!appManaHostBase)
+            {
+                Debug.Log($"Called {nameof(CloseLobby)}");
+                return;
+            }
+
+            appManaHostBase.CloseLobby();
         }
     }
 }
