@@ -67,7 +67,7 @@ Hit play. Observe your two screens now represent the two distinct player devices
  - Built-In Render Pipeline, HDRP or URP.
  - Use only one camera and one scene. Use Cinemachine wherever you would ordinarily use multiple cameras.
  - You can develop on a Windows or macOS device. Vulkan, DirectX 11, DirectX 12 or DirectX DXR will be used to render your game.
- - New InputSystem (`"com.unity.inputsystem": "1.4.2"`). `Input.mousePosition` and other legacy input approaches are **not supported**. See [here for migration tips](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.3/manual/Migration.html).
+ - New InputSystem (`"com.unity.inputsystem": "1.4.4"`). `Input.mousePosition` and other legacy input approaches are **not supported**. See [here for migration tips](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.3/manual/Migration.html).
  - You **cannot** use overlay canvases. Use **Camera Space** in your canvases. In HDRP, use a custom pass to bypass postprocessing in your screen space canvas. See the HDRP template for a complete example.
  - Use a **Constant Pixel Size** setting for your Canvas Scaler. Set the **Base Scale** inside your **Remote Playable Configuration** component to the scale you use for the purposes of the art. The runtime will correctly then multiply the device's real scale on top of it.
  - Do not use **Screen** properties. There is no screen when streaming remotely.
