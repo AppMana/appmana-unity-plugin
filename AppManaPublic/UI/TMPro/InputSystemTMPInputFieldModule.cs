@@ -15,6 +15,7 @@ namespace AppMana.UI.TMPro
 {
     public class InputSystemTMPInputFieldModule : UIBehaviour
     {
+        private static readonly ComponentCache m_ParentCache = new();
         [SerializeField] private InputActionAsset m_ActionsAsset;
         [SerializeField] private float m_RepeatDelaySeconds = 0.16f;
         [SerializeField] private float m_RepeatPeriodSeconds = 0.05f;
@@ -202,7 +203,7 @@ namespace AppMana.UI.TMPro
         }
 
         public static InputSystemTMPInputFieldModule ParentInstance(Component thisComponent) =>
-            Memoized.ComputeIfAbsent(thisComponent,
+            m_ParentCache.ComputeIfAbsent(thisComponent,
                 _ => thisComponent.GetComponentInParent<InputSystemTMPInputFieldModule>() ??
                      FindObjectOfType<InputSystemTMPInputFieldModule>());
 

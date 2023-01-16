@@ -7,6 +7,9 @@ using UnityEngine.InputSystem.Controls;
 
 namespace AppMana.ComponentModel
 {
+    /// <summary>
+    /// Helper classes for <c>InputSystem</c> devices.
+    /// </summary>
     public static class DeviceExtensions
     {
         private class DisposableDevice : IDisposable
@@ -24,6 +27,12 @@ namespace AppMana.ComponentModel
             }
         }
 
+        /// <summary>
+        /// When the target component is destroyed, the <c>device</c> is removed.
+        /// </summary>
+        /// <param name="device">input device</param>
+        /// <param name="target">a component in your scene</param>
+        /// <returns>the device</returns>
         public static InputDevice AddTo(this InputDevice device, Component target)
         {
             var disposableDevice = new DisposableDevice(device);
@@ -31,6 +40,12 @@ namespace AppMana.ComponentModel
             return device;
         }
 
+        /// <summary>
+        /// When the target game object is destroyed, the <c>device</c> is removed.
+        /// </summary>
+        /// <param name="device">input device</param>
+        /// <param name="target">game object in your scene</param>
+        /// <returns>the device</returns>
         public static InputDevice AddTo(this InputDevice device, GameObject target)
         {
             var disposableDevice = new DisposableDevice(device);
@@ -38,6 +53,13 @@ namespace AppMana.ComponentModel
             return device;
         }
 
+        /// <summary>
+        /// When the target disposable collection, the <c>device</c> is removed.
+        /// </summary>
+        /// <param name="device">input device</param>
+        /// <param name="target">a disposable collection</param>
+        /// <returns>the device</returns>
+        /// <seealso cref="CompositeDisposable"/>
         public static InputDevice AddTo(this InputDevice device, ICollection<IDisposable> target)
         {
             var disposableDevice = new DisposableDevice(device);
@@ -45,12 +67,22 @@ namespace AppMana.ComponentModel
             return device;
         }
 
+        /// <summary>
+        /// Observes a stream of text character inputs from the provided keyboard using <see cref="Keyboard.onTextInput"/>
+        /// </summary>
+        /// <param name="keyboard">the keyboard</param>
+        /// <returns>an observable of characters</returns>
         public static IObservable<char> OnTextInputAsObservable(this Keyboard keyboard)
         {
             return Observable.FromEvent<char>(handler => keyboard.onTextInput += handler,
                 handler => keyboard.onTextInput -= handler);
         }
 
+        /// <summary>
+        /// Observes whenever the action is performed
+        /// </summary>
+        /// <param name="action">the action</param>
+        /// <returns>a stream of callback contexts</returns>
         public static IObservable<InputAction.CallbackContext> OnPerformedAsObservable(this InputAction action)
         {
             return Observable.FromEvent<InputAction.CallbackContext>(
@@ -58,6 +90,11 @@ namespace AppMana.ComponentModel
                 handler => action.performed -= handler);
         }
 
+        /// <summary>
+        /// Observes whenever an action is cancelled
+        /// </summary>
+        /// <param name="action">the action</param>
+        /// <returns>a stream of callback contexts</returns>
         public static IObservable<InputAction.CallbackContext> OnCancelledAsObservable(this InputAction action)
         {
             return Observable.FromEvent<InputAction.CallbackContext>(
@@ -65,12 +102,25 @@ namespace AppMana.ComponentModel
                 handler => action.canceled -= handler);
         }
 
+        /// <summary>
+        /// Streams the values from the action whenever it is performed
+        /// </summary>
+        /// <param name="action">the action</param>
+        /// <typeparam name="T">the type of its value (corresponds to its associated control)</typeparam>
+        /// <returns>a stream of values whenever the action is performed</returns>
         public static IObservable<T> OnValueAsObservable<T>(this InputAction action) where T : struct
         {
             return action.OnPerformedAsObservable()
                 .Select(ctx => ctx.ReadValue<T>());
         }
 
+        /// <summary>
+        /// Observes an action whose <see cref="InputAction.activeControl"/> is a <see cref="KeyControl"/> and emits
+        /// the key pressed
+        /// </summary>
+        /// <param name="action">the action</param>
+        /// <returns>a tuple of key codes and scan codes</returns>
+        /// <exception cref="NotImplementedException">throws when the action's active control is not a <see cref="KeyControl"/></exception>
         public static IObservable<(Key keyCode, int scanCode)> OnKeyAsObservable(this InputAction action)
         {
             return action.OnPerformedAsObservable()
@@ -83,7 +133,7 @@ namespace AppMana.ComponentModel
                             (Key.A, 0));
                     }
 
-                    
+
                     return Observable.Return((activeControl.keyCode, activeControl.scanCode));
                 });
         }
