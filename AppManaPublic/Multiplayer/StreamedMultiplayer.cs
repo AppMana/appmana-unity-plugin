@@ -52,6 +52,11 @@ namespace AppMana.Multiplayer
                 return;
             }
 
+            if (FindObjectOfType<StreamedMultiplayer>() != null)
+            {
+                return;
+            }
+
             var gameObject = new GameObject($"({nameof(StreamedMultiplayer)})");
             gameObject.AddComponent<StreamedMultiplayer>();
         }

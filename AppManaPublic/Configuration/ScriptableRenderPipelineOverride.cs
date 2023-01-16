@@ -1,10 +1,14 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 
 namespace AppManaPublic.Configuration
 {
-    [ExecuteAlways]
+    /// <summary>
+    /// Sets the pipeline in multi-pipeline projects.
+    /// </summary>
+    [ExecuteAlways, Obsolete]
     internal class ScriptableRenderPipelineOverride : UIBehaviour
     {
         [SerializeField] private RenderPipelineAsset m_Asset;

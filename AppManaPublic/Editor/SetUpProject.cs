@@ -8,7 +8,7 @@ namespace AppManaPublic.Editor
     /// Configures your project for optimal streaming on AppMana
     /// </summary>
     [InitializeOnLoad]
-    public class SetUpProject
+    internal class SetUpProject
     {
         static SetUpProject()
         {

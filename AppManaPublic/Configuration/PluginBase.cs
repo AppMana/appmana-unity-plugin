@@ -3,6 +3,9 @@ using UnityEngine.EventSystems;
 
 namespace AppManaPublic.Configuration
 {
+    /// <summary>
+    /// Internal class to help inject the plugin components at runtime
+    /// </summary>
     internal class PluginBase : UIBehaviour
     {
         internal const string pluginResourceName = "(AppMana Plugin Prefab)";
