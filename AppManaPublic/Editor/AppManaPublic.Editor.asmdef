@@ -5,7 +5,8 @@
         "UnityEditor.UI",
         "UnityEditor.TestRunner",
         "AppManaPublic",
-        "Unity.TextMeshPro.Editor"
+        "Unity.TextMeshPro.Editor",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [
         "Editor"
