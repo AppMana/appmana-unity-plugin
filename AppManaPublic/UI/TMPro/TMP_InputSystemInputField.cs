@@ -1013,7 +1013,11 @@ namespace AppMana.UI.TMPro
         protected override void OnEnable()
         {
             //Debug.Log("*** OnEnable() *** - " + this.name);
-            InputSystemTMPInputFieldModule.ParentInstance(this).OnEnabledField(this);
+            var inputSystemTMPInputFieldModule = InputSystemTMPInputFieldModule.ParentInstance(this);
+            if (inputSystemTMPInputFieldModule != null)
+            {
+                inputSystemTMPInputFieldModule.OnEnabledField(this);
+            }
             base.OnEnable();
 
             if (m_Text == null)
@@ -1093,7 +1097,11 @@ namespace AppMana.UI.TMPro
         {
             // the coroutine will be terminated, so this will ensure it restarts when we are next activated
             m_BlinkCoroutine = null;
-            InputSystemTMPInputFieldModule.ParentInstance(this).OnDisabledField(this);
+            var inputSystemTMPInputFieldModule = InputSystemTMPInputFieldModule.ParentInstance(this);
+            if (inputSystemTMPInputFieldModule != null)
+            {
+                inputSystemTMPInputFieldModule.OnDisabledField(this);
+            }
             DeactivateInputField();
             if (m_TextComponent != null)
             {
