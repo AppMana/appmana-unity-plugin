@@ -58,7 +58,7 @@ Hit play. Observe your two screens now represent the two distinct player devices
 
 ### Tips and Tricks
 
- - To visualize an iPhone 12 Pro Mobile Safari viewport, add the screen resolution 780 x 1326.
+ - To visualize mobile viewports, switch to the Simulator view and choose an AppMana device profile by searching the word "AppMana" in the dropdown.
  - Use the `CinemachinePressableInputProvider` component to get Input System-based input for your Cinemachine cameras. Reference the `UI/Delta` input action for the **XY Axis**, and `UI/Click` for **Enable When Pressed** if you want to limit camemra looking while a pointer (touch or mouse) are pressed. 
 
 ### Requirements and Limitations
@@ -69,5 +69,5 @@ Hit play. Observe your two screens now represent the two distinct player devices
  - You can develop on a Windows or macOS device. Vulkan, DirectX 11, DirectX 12 or DirectX DXR will be used to render your game.
  - New InputSystem (`"com.unity.inputsystem": "1.4.4"`). `Input.mousePosition` and other legacy input approaches are **not supported**. See [here for migration tips](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.3/manual/Migration.html).
  - You **cannot** use overlay canvases. Use **Camera Space** in your canvases. In HDRP, use a custom pass to bypass postprocessing in your screen space canvas. See the HDRP template for a complete example.
- - Use a **Constant Pixel Size** setting for your Canvas Scaler. Set the **Base Scale** inside your **Remote Playable Configuration** component to the scale you use for the purposes of the art. The runtime will correctly then multiply the device's real scale on top of it.
+ - Use a **Constant Physical Size** setting for your Canvas Scaler.
  - Do not use **Screen** properties. There is no screen when streaming remotely.
