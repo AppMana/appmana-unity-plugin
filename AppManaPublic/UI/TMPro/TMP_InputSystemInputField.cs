@@ -1489,7 +1489,7 @@ namespace AppMana.UI.TMPro
                     return;
                 }
 
-                #if ENABLE_INPUT_SYSTEM
+                #if UNITY_INPUTSYSTEM
                 if (m_ProcessingEvent != null && m_ProcessingEvent.rawType == EventType.MouseDown && m_ProcessingEvent.button == 0)
                 {
                     // Check for Double Click
@@ -1789,7 +1789,7 @@ namespace AppMana.UI.TMPro
             }
 
             // todo: set shift for multiplayer
-            // #if ENABLE_INPUT_SYSTEM
+            // #if UNITY_INPUTSYSTEM
             // Event.PopEvent(this, m_ProcessingEvent);
             // bool shift = m_ProcessingEvent != null && (m_ProcessingEvent.modifiers & EventModifiers.Shift) != 0;
             // #else
