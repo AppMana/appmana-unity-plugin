@@ -19,22 +19,22 @@
     "versionDefines": [
         {
             "name": "com.unity.inputsystem",
-            "expression": "",
+            "expression": "1.0.0",
             "define": "UNITY_INPUTSYSTEM"
         },
         {
             "name": "com.neuecc.unirx",
-            "expression": "",
+            "expression": "1.0.0",
             "define": "UNIRX"
         },
         {
             "name": "com.unity.cinemachine",
-            "expression": "",
+            "expression": "1.0.0",
             "define": "CINEMACHINE"
         },
         {
             "name": "com.unity.textmeshpro",
-            "expression": "",
+            "expression": "1.0.0",
             "define": "TMP"
         }
     ],
