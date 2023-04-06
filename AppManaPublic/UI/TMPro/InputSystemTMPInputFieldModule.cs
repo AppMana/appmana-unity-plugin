@@ -13,6 +13,7 @@ using Observable = UniRx.Observable;
 
 namespace AppMana.UI.TMPro
 {
+    [DefaultExecutionOrder(-1000)]
     public class InputSystemTMPInputFieldModule : UIBehaviour
     {
         private static readonly ComponentCache m_ParentCache = new();
@@ -100,12 +101,19 @@ namespace AppMana.UI.TMPro
             if (m_States.TryGetValue(tmpInputSystemInputField, out var state))
             {
                 state.disposable.Dispose();
+                state.unsub();
+                state.unsub = null;
                 state.disposable = new CompositeDisposable();
             }
         }
 
         public void OnEnabledField(TMP_InputSystemInputField tmpInputSystemInputField)
         {
+            if (!Application.isPlaying)
+            {
+                throw new UnityException($"unexpectedly called {nameof(OnEnabledField)}");
+            }
+            
             var state = new InputSystemFieldState();
             m_States.AddOrUpdate(tmpInputSystemInputField, state);
             var compositeDisposable = state.disposable;
@@ -115,7 +123,7 @@ namespace AppMana.UI.TMPro
             {
                 if (inputActionRef == null)
                 {
-                    return;
+                    throw new UnityException("input action ref was unexpectedly null");
                 }
 
                 var action = inputActionRef.action;
@@ -127,7 +135,7 @@ namespace AppMana.UI.TMPro
                 var performed = action.OnPerformedAsObservable()
                     // whenever the key is pressed
                     .Where(ctx => ctx.action is
-                        {activeControl: KeyControl {wasPressedThisFrame: true}, phase: InputActionPhase.Performed});
+                        { activeControl: KeyControl { wasPressedThisFrame: true }, phase: InputActionPhase.Performed });
                 var withRepeats = repeats
                     ? // repeat it when it's held
                     performed.SelectMany(ctx =>
@@ -139,7 +147,7 @@ namespace AppMana.UI.TMPro
                             .TakeUntil(action
                                 .OnPerformedAsObservable()
                                 .Where(ctx2 => ctx2.action is
-                                    {activeControl: KeyControl {wasReleasedThisFrame: true}}));
+                                    { activeControl: KeyControl { wasReleasedThisFrame: true } }));
                     })
                     : performed.Select(ctx => { return (ctx, updateSelected: false); });
                 withRepeats.Subscribe(tuple =>
@@ -147,7 +155,7 @@ namespace AppMana.UI.TMPro
                         var (_, updateSelected) = tuple;
                         var evt = new Event()
                         {
-                            character = (char) 0,
+                            character = (char)0,
                             keyCode = sendKeyCode,
                             rawType = EventType.KeyDown,
                             modifiers = currentModifiers
@@ -165,22 +173,66 @@ namespace AppMana.UI.TMPro
                     .AddTo(compositeDisposable);
             }
 
+            void HandleChar(char character)
+            {
+                if (character < 32 || character > 127)
+                {
+                    return;
+                }
+                state.eventQueue.Enqueue(new Event()
+                {
+                    button = 0,
+                    character = character,
+                    commandName = "",
+                    rawType = EventType.KeyDown,
+                    modifiers = currentModifiers
+                });
+            }
+
+            var keyboardSubs = new Dictionary<Keyboard, IDisposable>();
+
             // keyboard inputs
             // append
             // todo: multiplayer
-            Keyboard.current.OnTextInputAsObservable()
-                .Subscribe(character =>
+            void HandleDeviceChange(InputDevice device, InputDeviceChange change)
+            {
+                if (device is Keyboard keyboard)
                 {
-                    state.eventQueue.Enqueue(new Event()
+                    switch (change)
                     {
-                        button = 0,
-                        character = character,
-                        commandName = "",
-                        rawType = EventType.KeyDown,
-                        modifiers = currentModifiers
-                    });
-                })
-                .AddTo(compositeDisposable);
+                        case InputDeviceChange.Added:
+                            if (keyboardSubs.ContainsKey(keyboard))
+                            {
+                                break;
+                            }
+                            
+                            var disposable = new CompositeDisposable();
+                            keyboardSubs[keyboard] = disposable;
+                            keyboard.OnTextInputAsObservable()
+                                .Subscribe(HandleChar)
+                                .AddTo(disposable)
+                                .AddTo(compositeDisposable);
+                            break;
+                        case InputDeviceChange.Removed:
+                            if (!keyboardSubs.ContainsKey(keyboard))
+                            {
+                                break;
+                            }
+
+                            keyboardSubs.Remove(keyboard, out var sub);
+                            sub.Dispose();
+                            break;
+                    }
+                }
+            }
+
+            if (Keyboard.current != null)
+            {
+                HandleDeviceChange(Keyboard.current, InputDeviceChange.Added);
+            }
+
+            InputSystem.onDeviceChange += HandleDeviceChange;
+            state.unsub = () => InputSystem.onDeviceChange -= HandleDeviceChange;
 
             // everything else
             Subscribe(m_Backspace, KeyCode.Backspace, true);
@@ -248,7 +300,7 @@ namespace AppMana.UI.TMPro
                 .FirstOrDefault(action =>
                     string.Equals(action.name, name, StringComparison.InvariantCultureIgnoreCase)));
         }
-        
+
         private void SetDefaultActionsAsset()
         {
             var defaultActions = new InputActions();
@@ -307,5 +359,6 @@ namespace AppMana.UI.TMPro
         internal CompositeDisposable disposable = new();
         internal Queue<Event> eventQueue = new();
         internal int lastFrame = Int32.MinValue;
+        internal Action unsub;
     }
 }

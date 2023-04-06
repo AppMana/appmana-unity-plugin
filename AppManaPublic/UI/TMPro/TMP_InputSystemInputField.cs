@@ -1013,11 +1013,6 @@ namespace AppMana.UI.TMPro
         protected override void OnEnable()
         {
             //Debug.Log("*** OnEnable() *** - " + this.name);
-            var inputSystemTMPInputFieldModule = InputSystemTMPInputFieldModule.ParentInstance(this);
-            if (inputSystemTMPInputFieldModule != null)
-            {
-                inputSystemTMPInputFieldModule.OnEnabledField(this);
-            }
             base.OnEnable();
 
             if (m_Text == null)
@@ -1036,6 +1031,12 @@ namespace AppMana.UI.TMPro
 
             if (Application.isPlaying)
             {
+                var inputSystemTMPInputFieldModule = InputSystemTMPInputFieldModule.ParentInstance(this);
+                if (inputSystemTMPInputFieldModule != null)
+                {
+                    inputSystemTMPInputFieldModule.OnEnabledField(this);
+                }
+                
                 if (m_CachedInputRenderer == null && m_TextComponent != null)
                 {
                     GameObject go = new GameObject("Caret", typeof(TMP_SelectionCaret));
