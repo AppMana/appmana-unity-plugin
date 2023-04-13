@@ -56,12 +56,15 @@ namespace AppManaPublic.Configuration
 
             var cameras = Object.FindObjectsOfType<Camera>();
             var unassociatedCameras = cameras.Where(camera => camera.enabled
+                                                              && camera.GetComponent<RenderNonStreamingCamera>() == null
                                                               && camera.targetTexture == null
                                                               && remotePlayableConfigurations.All(rpc =>
                                                                   rpc.camera != camera)).ToArray();
             if (unassociatedCameras.Length == 1)
             {
-                Debug.LogError($"Connect your camera to a {nameof(RemotePlayableConfiguration)}.");
+                Debug.LogWarning(
+                    $"Connect this camera to a {nameof(RemotePlayableConfiguration)}, add a {nameof(RenderNonStreamingCamera)} component to ensure it is rendered, or disable it.",
+                    unassociatedCameras[0]);
             }
 
             if (unassociatedCameras.Length > 1)
@@ -99,7 +102,6 @@ namespace AppManaPublic.Configuration
                                $"corresponding {nameof(InputSystemTMPInputFieldModule)} in order to function, so all " +
                                $"{nameof(InputSystemTMPInputFieldModule)} components should be children of your " +
                                $"{nameof(RemotePlayableConfiguration)}(s).");
-                
             }
 
 
@@ -107,8 +109,10 @@ namespace AppManaPublic.Configuration
             foreach (var canvas in Object.FindObjectsOfType<Canvas>(true)
                          .Where(canvas => canvas.renderMode == RenderMode.ScreenSpaceOverlay))
             {
-                var guessCamera = canvas.GetComponentInParent<Camera>() 
-                                  ?? (remotePlayableConfigurations.Length>0?remotePlayableConfigurations[0].camera:null)
+                var guessCamera = canvas.GetComponentInParent<Camera>()
+                                  ?? (remotePlayableConfigurations.Length > 0
+                                      ? remotePlayableConfigurations[0].camera
+                                      : null)
                                   ?? canvas.transform.root.GetComponentInChildren<Camera>();
                 canvas.renderMode = RenderMode.ScreenSpaceCamera;
                 canvas.worldCamera = guessCamera;
