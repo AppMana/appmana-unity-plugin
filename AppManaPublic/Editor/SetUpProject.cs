@@ -1,5 +1,5 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using System.Linq;
+using UnityEditor;
 using UnityEngine.Rendering;
 
 namespace AppManaPublic.Editor
@@ -14,8 +14,11 @@ namespace AppManaPublic.Editor
         {
             PlayerSettings.SetAdditionalIl2CppArgs("--generic-virtual-method-iterations=2");
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneWindows64, false);
+            var graphicsApis = PlayerSettings.GetGraphicsAPIs(BuildTarget.StandaloneWindows64);
+            graphicsApis = new[] { GraphicsDeviceType.Direct3D11 }
+                .Concat(graphicsApis.Except(new[] { GraphicsDeviceType.Direct3D11 })).ToArray();
             PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneWindows64,
-                new[] { GraphicsDeviceType.Direct3D11, GraphicsDeviceType.Direct3D12, GraphicsDeviceType.Vulkan });
+                graphicsApis);
             PlayerSettings.runInBackground = true;
             PlayerSettings.SplashScreen.show = false;
             PlayerSettings.assemblyVersionValidation = false;
