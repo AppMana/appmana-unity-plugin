@@ -52,17 +52,17 @@ namespace AppManaPublic.Configuration
         private CanvasScaler[] m_CanvasScalers = new CanvasScaler[0];
 
         [SerializeField, Tooltip("Called when this player connects to the experience")]
-        private UnityEvent m_OnPlayerConnected;
+        private UnityEvent m_OnPlayerConnected = new();
 
         [SerializeField, Tooltip("Called when this player disconnects from the experience")]
-        private UnityEvent m_OnPlayerDisconnected;
+        private UnityEvent m_OnPlayerDisconnected = new();
 
         [Header("Advanced")]
         [SerializeField, Tooltip("Set this to limit event system callbacks to objects in this hierarchy")]
         private Transform m_InputsOnlyAffectThisHierarchyOrAny;
 
         [SerializeField, Tooltip("Contact us for editor streaming support")]
-        private bool m_StreamInEditMode;
+        protected bool m_StreamInEditMode;
 
         [SerializeField, HideInInspector, Obsolete]
         private float m_BaseScale = 1f;
@@ -83,14 +83,23 @@ namespace AppManaPublic.Configuration
 
         internal int index => m_Index;
 
-        private static int m_Counter = -1;
+        internal static int counter = -1;
 
-        public InputActionAsset actions => m_Actions;
-
-        protected override void Awake()
+        public InputActionAsset actions
         {
-            m_Index = Interlocked.Increment(ref m_Counter);
+            get => m_Actions;
+            internal set => m_Actions = value;
+        }
+
+        protected sealed override void Awake()
+        {
             base.Awake();
+            AwakeImpl();
+        }
+
+        protected virtual void AwakeImpl()
+        {
+            m_Index = Interlocked.Increment(ref counter);
 
             var count = FindObjectsOfType<RemotePlayableConfiguration>(true).Length;
 
@@ -156,37 +165,51 @@ namespace AppManaPublic.Configuration
         public Camera camera1
         {
             get => m_Camera;
-            set => m_Camera = value;
+            internal set => m_Camera = value;
         }
 
         public new Camera camera
         {
             get => m_Camera;
-            set => m_Camera = value;
+            internal set => m_Camera = value;
         }
 
         public AudioListener audioListener
         {
             get => m_AudioListener;
-            set => m_AudioListener = value;
+            internal set => m_AudioListener = value;
         }
 
-        public CanvasScaler[] canvasScalers => m_CanvasScalers;
+        public CanvasScaler[] canvasScalers
+        {
+            get => m_CanvasScalers;
+            internal set => m_CanvasScalers = value;
+        }
 
         public Transform inputsOnlyAffectThisHierarchyOrAny => m_InputsOnlyAffectThisHierarchyOrAny;
         internal bool enableStreamingInEditor => m_StreamInEditMode;
 
-        protected override void Start()
+        protected sealed override void Start()
+        {
+            StartImpl();
+        }
+
+        protected virtual void StartImpl()
         {
             if (m_RequestedOnPlayerConnectedInvoke && !m_DidCallInStart)
             {
                 m_RequestedOnPlayerConnectedInvoke = false;
                 m_DidCallInStart = true;
-                m_OnPlayerConnected.Invoke();
+                m_OnPlayerConnected?.Invoke();
             }
         }
 
-        protected override void OnEnable()
+        protected sealed override void OnEnable()
+        {
+            OnEnableImpl();
+        }
+
+        protected virtual void OnEnableImpl()
         {
             if (Application.isEditor && !m_StreamInEditMode)
             {
@@ -206,15 +229,17 @@ namespace AppManaPublic.Configuration
             PluginBase.EnsurePlugins();
         }
 
-        protected override void OnDisable()
+        protected sealed override void OnDisable()
+        {
+            OnDisableImpl();
+        }
+
+        protected virtual void OnDisableImpl()
         {
             if (Application.isEditor && !m_StreamInEditMode)
             {
                 m_OnPlayerDisconnected.Invoke();
-                return;
             }
-
-            base.OnDisable();
         }
     }
 }
