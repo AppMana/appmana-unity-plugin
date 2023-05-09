@@ -1,0 +1,81 @@
+﻿{
+  "metadata" : [
+    {
+      "src" : [
+        {
+          "src" : "..",
+          "files" : [
+            "AppManaPublic/**/*.cs"
+          ],
+          "exclude" : [
+            "Assets/Plugins/**"
+          ]
+        }
+      ],
+      "globalNamespaceId" : "Global",
+      "filter" : "filterConfig.yml",
+      "dest" : "api"
+    }
+  ],
+  "build" : {
+    "globalMetadata" : {
+      "_appTitle" : "AppMana Unity Plugin Documentation",
+      "_appFooter" : "AppMana Unity Plugin Documentation",
+      "_enableSearch" : true
+    },
+    "content" : [
+      {
+        "files" : [
+          "toc.yml",
+          "index.md"
+        ]
+      },
+      {
+        "src" : "api",
+        "files" : [
+          "*.yml"
+        ],
+        "dest" : "api"
+      },
+      {
+        "src" : "manual",
+        "files" : [
+          "toc.yml",
+          "*.md"
+        ],
+        "dest" : "manual"
+      }
+    ],
+    "overwrite" : [
+      {
+        "src" : "..",
+        "files" : [
+          "AppManaPublic/**/*.md"
+        ]
+      }
+    ],
+    "resource" : [
+      {
+        "files" : [
+          "resources/**/*"
+        ]
+      }
+    ],
+    "sitemap" : {
+      "baseUrl" : "https://appmana.com/learn/unity-plugin",
+      "changefreq" : "weekly",
+      "fileOptions" : {
+        "api/*" : {
+          "changefreq" : "daily"
+        }
+      }
+    },
+    "xref" : [
+      "https://appmana.com/learn/unity-plugin/xrefmap.yml"
+    ],
+    "xrefService" : [
+      "https://xref.docs.microsoft.com/query?uid={uid}"
+    ],
+    "dest" : "../_site"
+  }
+}

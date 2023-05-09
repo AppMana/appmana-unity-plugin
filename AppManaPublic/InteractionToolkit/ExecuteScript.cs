@@ -1,5 +1,7 @@
-using System;
-using UniRx;
+using System.Linq;
+using AppMana.ComponentModel;
+using AppManaPublic.Configuration;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -15,8 +17,6 @@ namespace AppMana.InteractionToolkit
         [SerializeField, Tooltip("The code to execute in your browser"), Multiline(3)]
         private string m_Javascript;
 
-        internal Subject<string> m_Subject = new Subject<string>();
-
         /// <summary>
         /// The code to execute in your browser
         /// </summary>
@@ -27,9 +27,39 @@ namespace AppMana.InteractionToolkit
         /// Immediately run the code in the browser. Does not block.
         /// </summary>
         [Preserve]
+        [ContextMenu("Execute")]
         public virtual void Execute()
         {
-            m_Subject.OnNext(script);
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
+            var playableConfigurations = UnityUtilities.FindObjectsByType<RemotePlayableConfiguration>();
+            if (playableConfigurations.Length > 1)
+            {
+                // multiple players: run the code in the correct context
+                var (playableConfiguration, _) = playableConfigurations
+                    .SelectMany(playableConfiguration => playableConfiguration.GetComponentsInChildren<ExecuteScript>()
+                        .Select(executeScript => (playableConfiguration, executeScript)))
+                    .FirstOrDefault(tuple => tuple.executeScript == this);
+
+                playableConfigurations[0] = playableConfiguration;
+            }
+
+            if (playableConfigurations[0] != null)
+            {
+                UniTask.Void(async () =>
+                {
+                    var result = await playableConfigurations[0].EvalInPage<object>(script);
+                    Debug.Log(result);
+                });
+            }
+            else
+            {
+                Debug.LogError(
+                    $"Trying to execute code in a multiplayer game, and this script is not the child of a {nameof(RemotePlayableConfiguration)}");
+            }
         }
     }
 }

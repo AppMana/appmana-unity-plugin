@@ -15,16 +15,26 @@ Plastic is supported. For the best experience, use Git.
 
 ### Usage and Installation in an Existing Project
  
- 1. Add the following dependencies to the top of the `dependencies` section of your `Packages/manifest.json` file:
+ 1. Add the following scoped registries and dependencies to your `Packages/manifest.json` file:
 
 ```json
 {
+  // start selection for copy and paste
+  "scopedRegistries": [
+    {
+      "name": "OpenUPM",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.cysharp",
+        "com.neuecc"
+      ]
+    }
+  ],
+  // end selection for copy and paste
   "dependencies": {
     // start selection for copy and paste
-    "com.unity.inputsystem": "1.4.4",
+    "com.unity.inputsystem": "1.5.1",
     "com.appmana.unity.public": "https://github.com/AppMana/appmana-unity-plugin.git",
-    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
-    "com.neuecc.unirx": "https://github.com/neuecc/UniRx.git?path=Assets/Plugins/UniRx/Scripts",
     // end selection for copy and paste
   }
 }
@@ -67,7 +77,8 @@ Hit play. Observe your two screens now represent the two distinct player devices
  - Built-In Render Pipeline, HDRP or URP.
  - Use only one camera and one scene. Use Cinemachine wherever you would ordinarily use multiple cameras.
  - You can develop on a Windows or macOS device. Vulkan, DirectX 11, DirectX 12 or DirectX DXR will be used to render your game.
- - New InputSystem (`"com.unity.inputsystem": "1.4.4"`). `Input.mousePosition` and other legacy input approaches are **not supported**. See [here for migration tips](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.3/manual/Migration.html).
+ - You must use InputSystem (`"com.unity.inputsystem": "1.5.1"`). `Input.mousePosition` and other legacy input approaches are **not supported**. See [here for migration tips](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.3/manual/Migration.html). To ease migration, use `AppMana.Compatibility.Input`.
  - You **cannot** use overlay canvases. Use **Camera Space** in your canvases. In HDRP, use a custom pass to bypass postprocessing in your screen space canvas. See the HDRP template for a complete example.
  - Use a **Constant Physical Size** setting for your Canvas Scaler.
- - Do not use **Screen** properties. There is no screen when streaming remotely.
+ - Use the `AppMana.Compatibility.Screen` class instead of `UnityEngine.Screen`.
+ - `PlayerPrefs` are not supported. Use `AppMana.Compatibility.PlayerPrefs` or the `RemotePlayableConfiguration.playerPrefs` property.

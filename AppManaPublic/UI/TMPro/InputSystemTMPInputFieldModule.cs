@@ -257,7 +257,7 @@ namespace AppMana.UI.TMPro
         public static InputSystemTMPInputFieldModule ParentInstance(Component thisComponent) =>
             m_ParentCache.ComputeIfAbsent(thisComponent,
                 _ => thisComponent.GetComponentInParent<InputSystemTMPInputFieldModule>() ??
-                     FindObjectOfType<InputSystemTMPInputFieldModule>());
+                     UnityUtilities.FindFirstObjectByType<InputSystemTMPInputFieldModule>());
 
         public InputActionAsset actionsAsset
         {

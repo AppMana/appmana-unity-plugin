@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading;
+using AppMana.ComponentModel;
 using AppMana.UI.TMPro;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -17,6 +19,8 @@ namespace AppManaPublic.Configuration
     /// </summary>
     /// <para>Connect the player's corresponding <c>Camera</c> (usually the main camera) to the Camera slot. This is the
     /// minimum amount of configuration needed for a working streamed player.</para>
+    /// <para>Use <see cref="onPlayerConnected"/> to start your experience. <c>Start</c> will be called potentially long
+    /// before the player actually connects. This is an important part of ensuring AppMana streams load instantly.</para>
     /// <para>If your game has UGUI-based UI, add the canvas scalers to this component in order to correctly set their
     /// scaling based on devices. You should use <see cref="CanvasScaler.ScaleMode.ConstantPixelSize"/> to emulate
     /// responsive web browser scaling.</para>
@@ -38,7 +42,7 @@ namespace AppManaPublic.Configuration
     /// does not configure it correctly for any kind of multiplayer scenario (local multiplayer nor AppMana
     /// multiplayer).</para>
     [Preserve, DefaultExecutionOrder(10000)]
-    public class RemotePlayableConfiguration : UIBehaviour
+    public class RemotePlayableConfiguration : UIBehaviour, IEvalInPage
     {
         [Header("Setup")] [SerializeField, Tooltip("Set this to the camera to stream for this player")]
         private Camera m_Camera;
@@ -57,26 +61,19 @@ namespace AppManaPublic.Configuration
         [SerializeField, Tooltip("Called when this player disconnects from the experience")]
         private UnityEvent m_OnPlayerDisconnected = new();
 
-        [Header("Advanced")]
-        [SerializeField, Tooltip("Set this to limit event system callbacks to objects in this hierarchy")]
-        private Transform m_InputsOnlyAffectThisHierarchyOrAny;
-
         [SerializeField, Tooltip("Contact us for editor streaming support")]
         protected bool m_StreamInEditMode;
 
-        [SerializeField, HideInInspector, Obsolete]
-        private float m_BaseScale = 1f;
-
         /// <summary>
-        /// Set to <c>true</c> when we're in editor and a player connected invocation was requested.
+        /// Raised when the player connects for the first time.
         /// </summary>
-        private bool m_RequestedOnPlayerConnectedInvoke;
-
-        private bool m_DidCallInStart = false;
-
         public UnityEvent onPlayerConnected => m_OnPlayerConnected;
 
+        /// <summary>
+        /// Raised when this player disconnects.
+        /// </summary>
         public UnityEvent onPlayerDisconnected => m_OnPlayerDisconnected;
+
         private InputUser m_User;
         internal InputUser user => m_User;
         private int m_Index;
@@ -85,11 +82,16 @@ namespace AppManaPublic.Configuration
 
         internal static int counter = -1;
 
+        /// <summary>
+        /// This player's instance of the input actions asset.
+        /// </summary>
         public InputActionAsset actions
         {
             get => m_Actions;
             internal set => m_Actions = value;
         }
+
+        private RemotePlayerPrefs m_PlayerPrefs;
 
         protected sealed override void Awake()
         {
@@ -97,11 +99,27 @@ namespace AppManaPublic.Configuration
             AwakeImpl();
         }
 
+        internal virtual async UniTask OnPlayerConnected()
+        {
+            await m_PlayerPrefs.LoadAsync();
+            m_OnPlayerConnected?.Invoke();
+        }
+        
         protected virtual void AwakeImpl()
         {
             m_Index = Interlocked.Increment(ref counter);
+            m_PlayerPrefs = new RemotePlayerPrefs(this);
+            var count = UnityUtilities.FindObjectsByType<RemotePlayableConfiguration>(true).Length;
 
-            var count = FindObjectsOfType<RemotePlayableConfiguration>(true).Length;
+            // if we're in the editor, simulate an on player connected event
+            if (Application.isEditor && !m_StreamInEditMode)
+            {
+                UniTask.Void(async () =>
+                {
+                    await UniTask.Delay(TimeSpan.FromSeconds(1f), DelayType.Realtime);
+                    await OnPlayerConnected();
+                });
+            }
 
             if (m_Actions == null)
             {
@@ -159,35 +177,30 @@ namespace AppManaPublic.Configuration
             m_User = InputUser.PerformPairingWithDevice(device, m_User);
         }
 
-        [Obsolete] public float baseScale => m_BaseScale;
-
-        [Obsolete]
-        public Camera camera1
-        {
-            get => m_Camera;
-            internal set => m_Camera = value;
-        }
-
         public new Camera camera
         {
             get => m_Camera;
-            internal set => m_Camera = value;
+            set => m_Camera = value;
         }
 
-        public AudioListener audioListener
+        internal AudioListener audioListener
         {
             get => m_AudioListener;
-            internal set => m_AudioListener = value;
+            set => m_AudioListener = value;
         }
 
-        public CanvasScaler[] canvasScalers
+        /// <summary>
+        /// Canvas scalers corresponding to this player.
+        /// </summary>
+        /// <para>In the next version, these will be determined automatically.</para>
+        internal CanvasScaler[] canvasScalers
         {
             get => m_CanvasScalers;
-            internal set => m_CanvasScalers = value;
+            set => m_CanvasScalers = value;
         }
 
-        public Transform inputsOnlyAffectThisHierarchyOrAny => m_InputsOnlyAffectThisHierarchyOrAny;
         internal bool enableStreamingInEditor => m_StreamInEditMode;
+        public RemotePlayerPrefs playerPrefs => m_PlayerPrefs;
 
         protected sealed override void Start()
         {
@@ -196,12 +209,6 @@ namespace AppManaPublic.Configuration
 
         protected virtual void StartImpl()
         {
-            if (m_RequestedOnPlayerConnectedInvoke && !m_DidCallInStart)
-            {
-                m_RequestedOnPlayerConnectedInvoke = false;
-                m_DidCallInStart = true;
-                m_OnPlayerConnected?.Invoke();
-            }
         }
 
         protected sealed override void OnEnable()
@@ -211,21 +218,6 @@ namespace AppManaPublic.Configuration
 
         protected virtual void OnEnableImpl()
         {
-            if (Application.isEditor && !m_StreamInEditMode)
-            {
-                if (!m_DidCallInStart)
-                {
-                    // delay this until Start() has been called, to give time for all the other user scripts to have run
-                    m_RequestedOnPlayerConnectedInvoke = true;
-                }
-                else
-                {
-                    m_OnPlayerConnected.Invoke();
-                }
-
-                return;
-            }
-
             PluginBase.EnsurePlugins();
         }
 
@@ -238,8 +230,61 @@ namespace AppManaPublic.Configuration
         {
             if (Application.isEditor && !m_StreamInEditMode)
             {
-                m_OnPlayerDisconnected.Invoke();
+                OnPlayerDisconnected().Forget();
             }
+        }
+
+        /// <summary>
+        /// Evaluates the provided JavaScript code in the context of the user's page.
+        /// </summary>
+        /// <para>This supports await.</para>
+        /// <para>Throws <see cref="PageEvaluationException"/> when a Javascript exception occurs on the remote page.</para>
+        /// <param name="javascript">The code to execute. This will be awaited.</param>
+        /// <param name="editorStubResponse">When running in editor, return this stub instead.</param>
+        /// <param name="editorDelaySeconds">When running in editor, delay the reply by this amount of time.</param>
+        /// <typeparam name="T">The expected type of the response. It should be JSON serializable. Use <c>JToken</c> to interpret as a general JSON value.</typeparam>
+        /// <returns>The JSON response, deserialized.</returns>
+        public async UniTask<T> EvalInPage<T>(
+            string javascript,
+            Func<T> editorStubResponse = default,
+            float editorDelaySeconds = 0.2f)
+        {
+            if (!AppManaHostBase.instance || Application.isEditor && !m_StreamInEditMode)
+            {
+                Debug.Log($"Called {nameof(EvalInPage)}, returning stub response");
+                if (editorDelaySeconds > 0)
+                {
+                    await UniTask.Delay(TimeSpan.FromSeconds(editorDelaySeconds));
+                }
+
+                return editorStubResponse != null ? editorStubResponse() : default;
+            }
+
+            return (await AppManaHostBase.instance.EvalInPage(javascript, this, false)).ToObject<T>();
+        }
+
+        /// <summary>
+        /// Evaluates the provided JavaScript code in the context of the user's page.
+        /// </summary>
+        /// <param name="javascript"></param>
+        /// <param name="editorStub"></param>
+        public void EvalInPage(string javascript, Action editorStub = default)
+        {
+            if (!AppManaHostBase.instance || Application.isEditor && !m_StreamInEditMode)
+            {
+                Debug.Log($"Called {nameof(EvalInPage)}");
+                editorStub?.Invoke();
+                return;
+            }
+
+            AppManaHostBase.instance.EvalInPage(javascript, this, true).Forget();
+        }
+
+#pragma warning disable CS1998
+        public async UniTask OnPlayerDisconnected()
+#pragma warning restore CS1998
+        {
+            m_OnPlayerDisconnected?.Invoke();
         }
     }
 }

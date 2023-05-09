@@ -1,3 +1,4 @@
+using AppMana.ComponentModel;
 using UniRx;
 using UniRx.Triggers;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace AppMana.InteractionToolkit
         {
             base.Start();
 
-            m_InputProvider = m_InputProvider ? m_InputProvider : FindObjectOfType<CinemachinePressableInputProvider>();
+            m_InputProvider = m_InputProvider ? m_InputProvider : UnityUtilities.FindFirstObjectByType<CinemachinePressableInputProvider>();
             if (m_InputProvider == null)
             {
                 return;

@@ -6,7 +6,7 @@ namespace AppManaPublic.Configuration
     /// <summary>
     /// This class is used by the runtime to add a remote playable configuration when none is specified in the scene.
     /// </summary>
-    [Preserve, DefaultExecutionOrder(10000)]
+    [Preserve, DefaultExecutionOrder(10000), AddComponentMenu("")]
     internal class InferredRemotePlayableConfiguration : RemotePlayableConfiguration
     {
         [SerializeField] private bool m_Initialized;

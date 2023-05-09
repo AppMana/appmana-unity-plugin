@@ -3,11 +3,12 @@
     "rootNamespace": "",
     "references": [
         "Unity.InputSystem",
-        "UniRx",
         "Cinemachine",
         "UnityEditor.UI",
         "UnityEngine.UI",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "UniTask",
+        "UniRx"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

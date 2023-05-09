@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using AppMana.ComponentModel;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace AppManaPublic.Configuration
@@ -13,7 +14,7 @@ namespace AppManaPublic.Configuration
 
         internal static void EnsurePlugins()
         {
-            var existingPlugins = FindObjectsOfType<PluginBase>();
+            var existingPlugins = UnityUtilities.FindObjectsByType<PluginBase>();
             if (existingPlugins.Length != 0)
             {
                 return;

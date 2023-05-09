@@ -9,7 +9,7 @@ namespace AppMana.ComponentModel
     /// </summary>
     public class ComponentCache
     {
-        private ConditionalWeakTable<Component, object> m_Cache = new();
+        private readonly ConditionalWeakTable<Component, object> m_Cache = new();
 
         /// <summary>
         /// Gets a value keyed by component

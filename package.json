@@ -1,13 +1,24 @@
 {
   "name": "com.appmana.unity.public",
   "displayName": "AppMana Unity Plugin",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "unity": "2021.3",
   "description": "",
   "keywords": [],
+  "scopedRegistries": [
+    {
+      "name": "OpenUPM",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.cysharp",
+        "com.neuecc"
+      ]
+    }
+  ],
   "dependencies": {
     "com.unity.inputsystem": "1.5.0",
-    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
-    "com.neuecc.unirx": "https://github.com/neuecc/UniRx.git?path=Assets/Plugins/UniRx/Scripts"
+    "com.unity.nuget.newtonsoft-json": "3.0.0",
+    "com.cysharp.unitask": "2.3.3",
+    "com.neuecc.unirx": "7.1.0"
   }
 }

@@ -24,35 +24,21 @@ namespace AppMana.Multiplayer
     /// Use the singleton accessible from <see cref="instance"/> to make multiplayer-specific API calls against the
     /// AppMana backend.
     [DefaultExecutionOrder(-1000)]
-    public class StreamedMultiplayer : UIBehaviour
+    public class StreamedMultiplayer : UIBehaviour, ILobby
     {
         public static StreamedMultiplayer instance { get; private set; }
         private int m_DisplayIndex = -1;
-        private AppManaHostBase m_AppManaHostBase;
-
-        private AppManaHostBase appManaHostBase
-        {
-            get
-            {
-                if (!m_AppManaHostBase)
-                {
-                    m_AppManaHostBase = FindObjectOfType<AppManaHostBase>();
-                }
-
-                return m_AppManaHostBase;
-            }
-        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Inject()
         {
-            var players = FindObjectsOfType<RemotePlayableConfiguration>(true);
+            var players = UnityUtilities.FindObjectsByType<RemotePlayableConfiguration>(true);
             if (players.Length <= 1)
             {
                 return;
             }
 
-            if (FindObjectOfType<StreamedMultiplayer>() != null)
+            if (UnityUtilities.FindFirstObjectByType<StreamedMultiplayer>() != null)
             {
                 return;
             }
@@ -70,7 +56,7 @@ namespace AppMana.Multiplayer
         protected override void Start()
         {
             base.Start();
-            var players = FindObjectsOfType<RemotePlayableConfiguration>(true);
+            var players = UnityUtilities.FindObjectsByType<RemotePlayableConfiguration>(true);
 
             // find the player inputs
             var playerGameObjects = string.Join(", ", players.Select(player => player.gameObject.name));
@@ -248,13 +234,13 @@ namespace AppMana.Multiplayer
         /// </summary>
         public void CloseLobby()
         {
-            if (!appManaHostBase)
+            if (!AppManaHostBase.instance)
             {
                 Debug.Log($"Called {nameof(CloseLobby)}");
                 return;
             }
 
-            appManaHostBase.CloseLobby();
+            AppManaHostBase.instance.CloseLobby();
         }
     }
 }

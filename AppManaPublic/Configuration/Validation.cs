@@ -1,4 +1,5 @@
 using System.Linq;
+using AppMana.ComponentModel;
 using AppMana.UI.TMPro;
 using TMPro;
 using UnityEngine;
@@ -6,6 +7,8 @@ using UnityEngine.UI;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine.SceneManagement;
+
+// ReSharper disable Unity.NoNullPropagation
 #endif
 
 namespace AppManaPublic.Configuration
@@ -52,7 +55,7 @@ namespace AppManaPublic.Configuration
             // perform checks for common mistakes and tries to resolve them automatically
 
             // check cameras
-            var remotePlayableConfigurations = Object.FindObjectsOfType<RemotePlayableConfiguration>(true);
+            var remotePlayableConfigurations = UnityUtilities.FindObjectsByType<RemotePlayableConfiguration>(true);
             if (remotePlayableConfigurations.Length == 0)
             {
                 if (Application.isEditor)
@@ -66,7 +69,7 @@ namespace AppManaPublic.Configuration
                 }
             }
 
-            var cameras = Object.FindObjectsOfType<Camera>();
+            var cameras = UnityUtilities.FindObjectsByType<Camera>();
             var unassociatedCameras = cameras.Where(camera => camera.enabled
                                                               && camera.GetComponent<RenderNonStreamingCamera>() == null
                                                               && camera.targetTexture == null
@@ -89,8 +92,8 @@ namespace AppManaPublic.Configuration
             }
 
             // check for input fields
-            var inputFields = Object.FindObjectsOfType<InputField>(true);
-            var tmpInputFields = Object.FindObjectsOfType<TMP_InputField>(true);
+            var inputFields = UnityUtilities.FindObjectsByType<InputField>(true);
+            var tmpInputFields = UnityUtilities.FindObjectsByType<TMP_InputField>(true);
             if (inputFields.Length > 0 || tmpInputFields.Length > 0)
             {
                 Debug.LogError(
@@ -104,8 +107,9 @@ namespace AppManaPublic.Configuration
             }
 
 
-            var inputSystemTMPInputFieldModules = Object.FindObjectsOfType<InputSystemTMPInputFieldModule>(true);
-            if (Object.FindObjectsOfType<TMP_InputSystemInputField>(true).Length > 0 &&
+            var inputSystemTMPInputFieldModules =
+                UnityUtilities.FindObjectsByType<InputSystemTMPInputFieldModule>(true);
+            if (UnityUtilities.FindObjectsByType<TMP_InputSystemInputField>(true).Length > 0 &&
                 inputSystemTMPInputFieldModules.Length !=
                 remotePlayableConfigurations.Length)
             {
@@ -129,7 +133,7 @@ namespace AppManaPublic.Configuration
 
 
             // check for screen space overlay canvases
-            foreach (var canvas in Object.FindObjectsOfType<Canvas>(true)
+            foreach (var canvas in UnityUtilities.FindObjectsByType<Canvas>(true)
                          .Where(canvas => canvas.renderMode == RenderMode.ScreenSpaceOverlay))
             {
                 var guessCamera = canvas.GetComponentInParent<Camera>()
