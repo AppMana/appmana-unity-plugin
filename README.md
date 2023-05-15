@@ -15,7 +15,7 @@ Plastic is supported. For the best experience, use Git.
 
 ### Usage and Installation in an Existing Project
  
- 1. Add the following scoped registries and dependencies to your `Packages/manifest.json` file:
+ 1. Add the following scoped registries and dependencies to your `Packages/manifest.json` file:*
 
 ```json
 {
@@ -39,10 +39,11 @@ Plastic is supported. For the best experience, use Git.
   }
 }
 ```
-
  2. Add the `RemotePlayableConfiguration` component and configure the camera, audio source and `CanvasScaler` components associated with the player.
  3. Use the provided `InputSettings` and `InputActions` assets for maximum compatibility with the simulated inputs platform. You can find these in our plugin's entry in your Packages directory in the Asset Browser window.
  4. Once you have committed these changes, sign up at [appmana.com](https://appmana.com) and supply the repository URL when prompted. We will build and deploy your game.
+
+\*If you are upgrading from an earlier version of the AppMana Unity Plugin, you should remove the UniRx and UniTask package references in your `manifest.json`; then, delete your `packages-lock.json` file to refresh your package versions. This will resolve errors regarding `SemVer` in your console, and will improve the reliability of packaging in the future.
 
 ### Enabling Multiplayer
 
