@@ -5,11 +5,29 @@ namespace AppMana.InteractionToolkit
     /// <summary>
     /// When <see cref="ExecuteScript.Execute"/>
     /// </summary>
-    public class RedirectToUrl : ExecuteScript
+    public partial class RedirectToUrl : ExecuteScript
     {
-        [SerializeField] private string m_BrowserHref = "";
-        [SerializeField] private bool m_AppendCurrentSearchParams = true;
-        [SerializeField] private string m_AppendAnchor = "";
+        [SerializeField] protected string m_BrowserHref = "";
+        [SerializeField] protected bool m_AppendCurrentSearchParams = true;
+        [SerializeField] protected string m_AppendAnchor = "";
+
+        public virtual string browserHref
+        {
+            get => m_BrowserHref;
+            set => m_BrowserHref = value;
+        }
+
+        public virtual bool appendCurrentSearchParams
+        {
+            get => m_AppendCurrentSearchParams;
+            set => m_AppendCurrentSearchParams = value;
+        }
+
+        public virtual string appendAnchor
+        {
+            get => m_AppendAnchor;
+            set => m_AppendAnchor = value;
+        }
 
         public override string script
         {
@@ -49,10 +67,8 @@ namespace AppMana.InteractionToolkit
             {
                 Debug.Log($"[{nameof(AppManaPublic)}] Redirecting to {m_BrowserHref} by executing \"{script}\"...");
             }
-            else
-            {
-                base.Execute();
-            }
+
+            base.Execute();
         }
     }
 }
