@@ -91,6 +91,16 @@ namespace AppManaPublic.Configuration
                     $"compositing or render layers.", cameras[0]);
             }
 
+            foreach (var remotePlayableConfiguration in remotePlayableConfigurations)
+            {
+                if (remotePlayableConfiguration.camera == null)
+                {
+                    Debug.LogFormat(Application.isEditor ? LogType.Error : LogType.Warning, LogOption.NoStacktrace,
+                        remotePlayableConfiguration,
+                        $"{validationPrefix}Set the {nameof(remotePlayableConfiguration.camera)} field on the {nameof(RemotePlayableConfiguration)} component attached to {remotePlayableConfiguration.gameObject.name}");
+                }
+            }
+
             // check for input fields
             var inputFields = UnityUtilities.FindObjectsByType<InputField>(true);
             var tmpInputFields = UnityUtilities.FindObjectsByType<TMP_InputField>(true);
