@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using AppMana.ComponentModel;
 using AppMana.UI.TMPro;
+using AppManaPublic.ComponentModel;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
@@ -10,6 +13,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.InputSystem.Users;
 using UnityEngine.Scripting;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace AppManaPublic.Configuration
@@ -45,24 +49,38 @@ namespace AppManaPublic.Configuration
     public class RemotePlayableConfiguration : UIBehaviour, IEvalInPage
     {
         [Header("Setup")] [SerializeField, Tooltip("Set this to the camera to stream for this player")]
-        private Camera m_Camera;
+        internal Camera m_Camera;
 
         [SerializeField, Tooltip("Set this to the audio listener for this player, or leave null to disable audio")]
-        private AudioListener m_AudioListener;
+        internal AudioListener m_AudioListener;
 
-        [SerializeField] private InputActionAsset m_Actions;
+        [SerializeField] internal InputActionAsset m_Actions;
 
         [SerializeField, Tooltip("Set this to canvas scalers for the player's canvas, used to adjust display DPI")]
-        private CanvasScaler[] m_CanvasScalers = new CanvasScaler[0];
+        internal CanvasScaler[] m_CanvasScalers = new CanvasScaler[0];
 
         [SerializeField, Tooltip("Called when this player connects to the experience")]
-        private UnityEvent m_OnPlayerConnected = new();
+        internal UnityEvent m_OnPlayerConnected = new();
 
         [SerializeField, Tooltip("Called when this player disconnects from the experience")]
-        private UnityEvent m_OnPlayerDisconnected = new();
+        internal UnityEvent m_OnPlayerDisconnected = new();
 
         [SerializeField, Tooltip("Contact us for editor streaming support")]
-        protected bool m_StreamInEditMode;
+        internal bool m_StreamInEditMode;
+
+        [SerializeField] internal bool m_EnablePlayerPrefs = true;
+        [SerializeField] internal bool m_EnableUrlParameters;
+        [FormerlySerializedAs("m_DefaultUrlParameters")] [SerializeField] internal StringTuple[] m_OfflineUrlParameters = new StringTuple[0];
+
+        /// <summary>
+        /// Set the URL parameters when this project is offline, for example when running in the editor.
+        /// </summary>
+        /// This can be used by your editor scripts.
+        public IReadOnlyDictionary<string, string> offlineUrlParameters
+        {
+            get => m_OfflineUrlParameters.ToDictionary(tuple => tuple.key, tuple => tuple.value);
+            set => m_OfflineUrlParameters = value.Select(kv => new StringTuple(kv.Key, kv.Value)).ToArray();
+        }
 
         /// <summary>
         /// Raised when the player connects for the first time.
@@ -81,6 +99,9 @@ namespace AppManaPublic.Configuration
         internal int index => m_Index;
 
         internal static int counter = -1;
+        private RemotePlayerPrefs m_PlayerPrefs;
+        private UrlParameters m_UrlParameters;
+        
 
         /// <summary>
         /// This player's instance of the input actions asset.
@@ -91,7 +112,6 @@ namespace AppManaPublic.Configuration
             internal set => m_Actions = value;
         }
 
-        private RemotePlayerPrefs m_PlayerPrefs;
 
         protected sealed override void Awake()
         {
@@ -101,14 +121,31 @@ namespace AppManaPublic.Configuration
 
         internal virtual async UniTask OnPlayerConnected()
         {
-            await m_PlayerPrefs.LoadAsync();
+            if (m_EnablePlayerPrefs)
+            {
+                await m_PlayerPrefs.LoadAsync();
+            }
+
+            if (m_EnableUrlParameters)
+            {
+                await m_UrlParameters.Update();
+            }
             m_OnPlayerConnected?.Invoke();
         }
-        
+
         protected virtual void AwakeImpl()
         {
             m_Index = Interlocked.Increment(ref counter);
-            m_PlayerPrefs = new RemotePlayerPrefs(this);
+            if (m_EnablePlayerPrefs)
+            {
+                m_PlayerPrefs = new RemotePlayerPrefs(this);
+            }
+
+            if (m_EnableUrlParameters)
+            {
+                m_UrlParameters = new UrlParameters(this, m_OfflineUrlParameters);
+            }
+
             var count = UnityUtilities.FindObjectsByType<RemotePlayableConfiguration>(true).Length;
 
             // if we're in the editor, simulate an on player connected event
@@ -201,6 +238,7 @@ namespace AppManaPublic.Configuration
 
         internal bool enableStreamingInEditor => m_StreamInEditMode;
         public RemotePlayerPrefs playerPrefs => m_PlayerPrefs;
+        public UrlParameters urlParameters => m_UrlParameters;
 
         protected sealed override void Start()
         {

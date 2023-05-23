@@ -2,6 +2,7 @@
     "name": "AppManaPublic.Editor",
     "rootNamespace": "",
     "references": [
+        "Unity.InputSystem",
         "UnityEditor.UI",
         "UnityEditor.TestRunner",
         "AppManaPublic",
