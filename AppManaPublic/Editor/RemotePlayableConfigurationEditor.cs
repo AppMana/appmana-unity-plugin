@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Text.Encodings.Web;
 using AppManaPublic.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -128,20 +127,6 @@ namespace AppManaPublic.Editor
                             tooltip =
                                 "Set these key value pairs to the URL parameters when running offline / not in a streaming session, such as in the editor or when the player is built standalone."
                         });
-                    var targetOfflineUrlParameters = m_Target.offlineUrlParameters;
-                    var example = targetOfflineUrlParameters
-                        .Select((kv, i) => (kv, i))
-                        .Aggregate("?", (s, kvi) =>
-                        {
-                            var amp = kvi.i > 0 ? "&" : "";
-                            return s +
-                                   $"{amp}{UrlEncoder.Default.Encode(kvi.kv.Key)}={UrlEncoder.Default.Encode(kvi.kv.Value)}";
-                        });
-                    if (targetOfflineUrlParameters.Count > 0)
-                    {
-                        EditorGUILayout.LabelField("Encoded:");
-                        EditorGUILayout.LabelField(example);
-                    }
                 }
 
                 if (m_EnablePlayerPrefs.boolValue || m_EnableUrlParameters.boolValue)
