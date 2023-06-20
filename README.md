@@ -67,10 +67,75 @@ This example will help you make a 2 player multiplayer game where each player ha
 
 Hit play. Observe your two screens now represent the two distinct player devices.
 
-### Tips and Tricks
+### Troubleshooting
 
- - To visualize mobile viewports, switch to the Simulator view and choose an AppMana device profile by searching the word "AppMana" in the dropdown.
- - Use the `CinemachinePressableInputProvider` component to get Input System-based input for your Cinemachine cameras. Reference the `UI/Delta` input action for the **XY Axis**, and `UI/Click` for **Enable When Pressed** if you want to limit camemra looking while a pointer (touch or mouse) are pressed. 
+> I only see a black screen in stream.
+
+Check your console for errors. The plugin will report any issues it finds.
+
+> I don't hear any sound.
+
+Connect your Audio Listener to the `RemotePlayableConfiguration`'s Audio Listener slot.
+
+> How do I visualize the layout of UI elements and the size of the stream in editor?
+
+To visualize mobile viewports like Mobile Safari and the Instagram in-app browser, switch to the Simulator view and choose an AppMana device profile by searching the word "AppMana" in the dropdown.
+
+> How can I connect my Cinemachine camera to an Input System-driven input?
+
+Use the `CinemachinePressableInputProvider` component to get Input System-based input for your Cinemachine cameras. Reference the `UI/Delta` input action for the **XY Axis**, and `UI/Click` for **Enable When Pressed** if you want to limit camemra looking while a pointer (touch or mouse) are pressed.
+
+> I have scripts which use Input and Screen. How can I resolve errors in the console quickly?
+
+Add `using Input = AppMana.Compatibility.Input` and `using Screen = AppMana.Compatibility.Screen` to your scripts which are using the unsupported features of **Input** and **Screen**.
+
+Generally, using the **Screen** component is flawed in this platform.
+
+> I observe freezes in my stream, or the game is stuttering in a way I cannot reproduce in editor or player builds.
+
+Your machine has cached shader compilation. Shader compilation can take a long time. To resolve this:
+
+ 1. Open the editor on Windows.
+ 2. Make sure your Unity editor title bar says DX11 (the default). If it doesn't, change the order of your player graphics backends. DX11 should be first.
+ 3. Vist the Graphics tab in Project Settings. Observe at the bottom, you should see "Currently tracked: X shaders, Y variants" or similar.
+ 4. Hit play.
+ 5. Play through all the content in your game, ensuring that all the shaders have been compiled and loaded. Be thorough.
+ 6. Click off play.
+ 7. In the Graphics tab, observe now a greater number of shaders and variants are tracked.
+ 8. Click the **Save to assets** button at the bottom of the Graphics tab.
+ 9. Drag and drop the saved shader variants asset into the preloaded shaders list in this tab.
+ 10. Save your project, save your scene, then commit.
+
+> How do I access `PlayerPrefs`?
+
+ 1. Check the **Enable PlayerPrefs** in the inspector for your **Remote Playable Configuration**.
+ 2. Access `remotePlayableConfiguration.playerPrefs`. This will only be ready after the **On Player Connected** Unity event callback is called. You can see this event callback in the **Remote Playable Configuration** inspector.
+ 3. Observe you will receive errors if you attempt to access this field before **On Player Connected** is called. In other words, you must wait until a player has connected before you can modify their `RemotePlayerPrefs`.
+
+> My changes to `PlayerPrefs` aren't saved.
+
+Make sure to call `remotePlayableConfiguration.playerPrefs.Save()`. This is also how the Unity API for `PlayerPrefs` works.
+
+> How do I embed my stream?
+
+Use the following `iframe` snippet. You will have to modify its width and height for your purposes.
+
+```html
+<iframe width="100%" height="100%" src="https://appmana.com/watch/your-url" referrerpolicy="same-origin"></iframe>
+```
+
+> How do I read the URL parameters from the visiting page?
+
+1. Check the **Enable URL Params** in the inspector for your **Remote Playable Configuration**.
+2. Access `remotePlayableConfiguration.urlParameters` and read the documentation for the methods on it there. This will only be ready after the **On Player Connected** Unity event callback is called. You can see this event callback in the **Remote Playable Configuration** inspector.
+3. Observe you will receive errors if you attempt to access this field before **On Player Connected** is called.
+
+> How do I limit the aspect ratio of my streaming player to be portrait-only?
+
+ 1. Visit your project in the AppMana dashboard.
+ 2. Visit the **Settings** tab.
+ 3. Set the **Max Player Width** to `56vh`.
+ 4. Click **Update**.
 
 ### Requirements and Limitations
 
