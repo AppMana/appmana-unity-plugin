@@ -8,23 +8,15 @@ namespace AppMana.ComponentModel
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T FindFirstObjectByType<T>() where T : Component
         {
-#if UNITY_2023_1_OR_NEWER
-            return Object.FindFirstObjectByType<T>();
-#else
-            return UnityEngine.Object.FindObjectOfType<T>();
-#endif
+            return Object.FindAnyObjectByType<T>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] FindObjectsByType<T>(bool includeInactive = false) where T : Component
         {
-#if UNITY_2023_1_OR_NEWER
             return Object.FindObjectsByType<T>(
                 includeInactive ? FindObjectsInactive.Include : FindObjectsInactive.Exclude,
                 FindObjectsSortMode.InstanceID);
-#else
-            return UnityEngine.Object.FindObjectsOfType<T>(includeInactive);
-#endif
         }
     }
 }

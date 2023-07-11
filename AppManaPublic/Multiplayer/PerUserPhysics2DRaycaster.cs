@@ -8,6 +8,10 @@ using UnityEngine.InputSystem.Users;
 
 namespace AppMana.Multiplayer
 {
+    /// <summary>
+    /// Filters raycasts. If the pointer does not belong to the user associated with this raycaster, return no raycast
+    /// hits. Simplifies multiple players interacting with EventSystem.
+    /// </summary>
     public class PerUserPhysics2DRaycaster : Physics2DRaycaster
     {
         [SerializeField] private RemotePlayableConfiguration m_RemotePlayableConfiguration;
@@ -18,9 +22,21 @@ namespace AppMana.Multiplayer
             set => m_RemotePlayableConfiguration = value;
         }
 
+        protected override void Awake()
+        {
+            m_RemotePlayableConfiguration ??= gameObject.GetComponentInParent<RemotePlayableConfiguration>() ??
+                                              gameObject.GetComponentInChildren<RemotePlayableConfiguration>();
+            if (m_RemotePlayableConfiguration == null)
+            {
+                Debug.LogError(
+                    $"Assign a {nameof(RemotePlayableConfiguration)} to the {nameof(PerUserPhysics2DRaycaster)} on {gameObject.name}, because none was found.");
+            }
+            base.Awake();
+        }
+
         public override void Raycast(PointerEventData eventData, List<RaycastResult> resultAppendList)
         {
-            if (eventData is ExtendedPointerEventData extendedPointerEventData)
+            if (eventData is ExtendedPointerEventData { device: not null } extendedPointerEventData)
             {
                 var user = InputUser.FindUserPairedToDevice(extendedPointerEventData.device);
                 if (m_RemotePlayableConfiguration?.user != user)
