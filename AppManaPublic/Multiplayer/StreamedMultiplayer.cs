@@ -73,7 +73,7 @@ namespace AppMana.Multiplayer
                     replacement.remotePlayableConfiguration = player;
                     replacement.maxRayIntersections = physicsRaycaster.maxRayIntersections;
                     Debug.LogWarning(
-                        $"{nameof(PhysicsRaycaster)} on {physicsRaycaster.gameObject.name} was replaced by a {nameof(PerUserPhysicsRaycaster)}. References to it, while rare, will be broken. Since you are making a multiplayer game, use the {nameof(PerUserPhysicsRaycaster)} instead");
+                        $"{nameof(PhysicsRaycaster)} on {physicsRaycaster.gameObject.name} was replaced by a {nameof(PerUserPhysicsRaycaster)}. References to it, while rare, will be broken. Use the {nameof(PerUserPhysicsRaycaster)} instead");
                     Destroy(physicsRaycaster);
                 }
 
@@ -86,7 +86,7 @@ namespace AppMana.Multiplayer
                     replacement.remotePlayableConfiguration = player;
                     replacement.maxRayIntersections = physics2dRaycaster.maxRayIntersections;
                     Debug.LogWarning(
-                        $"{nameof(Physics2DRaycaster)} on {physicsRaycaster.gameObject.name} was replaced by a {nameof(PerUserPhysics2DRaycaster)}. References to it, while rare, will be broken. Since you are making a multiplayer game, use the {nameof(PerUserPhysics2DRaycaster)} instead");
+                        $"{nameof(Physics2DRaycaster)} on {physicsRaycaster.gameObject.name} was replaced by a {nameof(PerUserPhysics2DRaycaster)}. References to it, while rare, will be broken. Use the {nameof(PerUserPhysics2DRaycaster)} instead");
                     Destroy(physics2dRaycaster);
                 }
 
@@ -105,7 +105,7 @@ namespace AppMana.Multiplayer
                     replacement.ignoreReversedGraphics = canvasRaycaster.ignoreReversedGraphics;
                     replacement.remotePlayableConfiguration = player;
                     Debug.LogWarning(
-                        $"{nameof(GraphicRaycaster)} on {canvasRaycaster.gameObject.name} was replaced by a {nameof(PerUserGraphicRaycaster)}. References to it, while rare, will be broken. Since you are making a multiplayer game, use the {nameof(PerUserGraphicRaycaster)} instead");
+                        $"{nameof(GraphicRaycaster)} on {canvasRaycaster.gameObject.name} was replaced by a {nameof(PerUserGraphicRaycaster)}. References to it, while rare, will be broken. Use the {nameof(PerUserGraphicRaycaster)} instead");
                     Destroy(canvasRaycaster);
                 }
             }
