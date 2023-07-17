@@ -1,13 +1,11 @@
 #if CINEMACHINE
-using System;
 using Cinemachine;
-using UnityEngine.EventSystems;
 #endif
-using System.Collections.Generic;
+using AppMana.ComponentModel;
+using AppManaPublic.Configuration;
 using UniRx;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 namespace AppMana.InteractionToolkit
 {
@@ -26,6 +24,8 @@ namespace AppMana.InteractionToolkit
              "Set this to a UI/Click action, and users will need to press a pointer button / touch in order to orbit.")]
         protected InputActionReference m_EnableWhenPressed;
 
+        [SerializeField] private RemotePlayableConfiguration m_RemotePlayableConfiguration;
+
         public virtual float scrollWheelMultiplier
         {
             get => m_ScrollWheelMultiplier;
@@ -37,7 +37,7 @@ namespace AppMana.InteractionToolkit
             get => m_EnableWhenPressed;
             set => m_EnableWhenPressed = value;
         }
-        
+
 #if CINEMACHINE
         public virtual float[] values
         {
@@ -71,25 +71,38 @@ namespace AppMana.InteractionToolkit
         {
             var pressed = false;
 
+            var enableWhenPressedAction = enableWhenPressed.action;
+            if (m_RemotePlayableConfiguration)
+            {
+                enableWhenPressedAction = m_RemotePlayableConfiguration.actions.FindAction(enableWhenPressedAction.id);
+            }
+
             if (enableWhenPressed)
             {
-                Observable.FromEvent<InputAction.CallbackContext>(
-                        handler => enableWhenPressed.action.performed += handler,
-                        handler => enableWhenPressed.action.performed -= handler)
+                enableWhenPressedAction.OnPerformedAsObservable()
                     .Subscribe(ctx => { pressed = ctx.ReadValueAsButton(); })
                     .AddTo(this);
 
-                Observable.FromEvent<InputAction.CallbackContext>(
-                        handler => enableWhenPressed.action.canceled += handler,
-                        handler => enableWhenPressed.action.canceled -= handler)
+                enableWhenPressedAction.OnCancelledAsObservable()
                     .Subscribe(_ => pressed = false)
                     .AddTo(this);
             }
 
+            var axes = new InputAction[] { XYAxis, XYAxis, ZAxis };
+            // resolving
+            for (var i = 0; i < axes.Length; i++)
+            {
+                if (axes[i] != null && m_RemotePlayableConfiguration != null)
+                {
+                    axes[i] = m_RemotePlayableConfiguration.actions.FindAction(axes[i].id);
+                }
+                
+            }
+            
             for (var i = 0; i <= 2; i++)
             {
                 var axis = i;
-                var action = ResolveForPlayer(i, i == 2 ? ZAxis : XYAxis);
+                var action = axes[axis];
 
                 // no action bound
                 if (action == null)
@@ -97,8 +110,7 @@ namespace AppMana.InteractionToolkit
                     continue;
                 }
 
-                Observable.FromEvent<InputAction.CallbackContext>(handler => action.performed += handler,
-                        handler => action.performed -= handler)
+                action.OnPerformedAsObservable()
                     .Subscribe(ctx =>
                     {
                         // mouse buttons and other pointers must be pressed in order to cause
@@ -121,8 +133,7 @@ namespace AppMana.InteractionToolkit
                     })
                     .AddTo(this);
 
-                Observable.FromEvent<InputAction.CallbackContext>(handler => action.canceled += handler,
-                        handler => action.canceled -= handler)
+                action.OnCancelledAsObservable()
                     .Subscribe(_ => { m_Values[axis] = 0f; })
                     .AddTo(this);
             }

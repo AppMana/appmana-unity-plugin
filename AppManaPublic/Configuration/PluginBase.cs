@@ -12,20 +12,22 @@ namespace AppManaPublic.Configuration
         internal const string pluginResourceName = "(AppMana Plugin Prefab)";
         internal const string pluginResourcePath = "(AppMana Plugin Resources)";
 
-        internal static void EnsurePlugins()
+        internal static int EnsurePlugins()
         {
             var existingPlugins = UnityUtilities.FindObjectsByType<PluginBase>();
             if (existingPlugins.Length != 0)
             {
-                return;
+                return existingPlugins.Length;
             }
 
-            var pluginPrefabs = Resources.LoadAll<PluginBase>(PluginBase.pluginResourcePath);
+            var pluginPrefabs = Resources.LoadAll<PluginBase>(pluginResourcePath);
             foreach (var pluginPrefab in pluginPrefabs)
             {
                 var gameObject = Instantiate(pluginPrefab);
                 gameObject.name = gameObject.name.Replace("(Clone)", "");
             }
+
+            return pluginPrefabs.Length;
         }
     }
 }

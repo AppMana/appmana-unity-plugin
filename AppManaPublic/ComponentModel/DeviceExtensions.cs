@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using AppMana.InteractionToolkit;
 using UniRx;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.InputSystem.UI;
+using UnityEngine.InputSystem.Users;
 
 namespace AppMana.ComponentModel
 {
@@ -81,13 +84,28 @@ namespace AppMana.ComponentModel
         /// <summary>
         /// Observes whenever the action is performed
         /// </summary>
+        /// Caveats: Click actions will be performed twice: Once with <c>ctx.ReadValueAsButton()</c> true (i.e. when the
+        /// pointer is pressed) and again with <c>ctx.ReadValueAsButton()</c> false (i.e., when the pointer is
+        /// released).
         /// <param name="action">the action</param>
         /// <returns>a stream of callback contexts</returns>
+        /// <seealso cref="MultiplayerInputActionReference"/>
         public static IObservable<InputAction.CallbackContext> OnPerformedAsObservable(this InputAction action)
         {
             return Observable.FromEvent<InputAction.CallbackContext>(
                 handler => action.performed += handler,
                 handler => action.performed -= handler);
+        }
+
+        /// <summary>
+        /// Get the user associated with the input action callback.
+        /// </summary>
+        /// Useful for retrieving the user from a performed callback.
+        /// <param name="callbackContext"></param>
+        /// <returns></returns>
+        public static InputUser? User(this InputAction.CallbackContext callbackContext)
+        {
+            return InputUser.FindUserPairedToDevice(callbackContext.control.device);
         }
 
         /// <summary>
@@ -126,7 +144,7 @@ namespace AppMana.ComponentModel
             return action.OnPerformedAsObservable()
                 .SelectMany(ctx =>
                 {
-                    if (ctx.action is not {activeControl: KeyControl activeControl})
+                    if (ctx.action is not { activeControl: KeyControl activeControl })
                     {
                         return Observable.Throw(
                             new NotImplementedException("cannot observe key for not key control inputs"),

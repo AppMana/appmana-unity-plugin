@@ -41,11 +41,6 @@ namespace AppMana.Compatibility
                 return;
             }
 
-            if (configurations.Length > 1)
-            {
-                Debug.LogError($"{nameof(ScreenCompatibility)} will not give valid results for multiple players.");
-            }
-
             m_Camera = configurations[0].camera;
         }
 

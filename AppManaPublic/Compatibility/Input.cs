@@ -48,6 +48,7 @@ namespace AppMana.Compatibility
             {
                 if (!m_WarnedMousePosition)
                 {
+                    m_WarnedMousePosition = true;
                     Debug.LogWarning($"Think critically how you are using {nameof(mousePosition)}. You are almost" +
                                      $" always better served by using {nameof(EventSystem)} handlers like {nameof(IPointerMoveHandler)}." +
                                      $"{nameof(IPointerMoveHandler.OnPointerMove)} and reading the position from the " +
@@ -166,6 +167,23 @@ namespace AppMana.Compatibility
             return Keyboard.current?[key]?.isPressed ?? false;
         }
 
+        private static Key Convert(KeyCode oldKeyCode)
+        {
+            var keyCodeName = oldKeyCode.ToString();
+
+            if (Enum.TryParse(keyCodeName, out Key key))
+            {
+                return key;
+            }
+
+            throw new ArgumentException($"Invalid key name {keyCodeName}, use the {nameof(Key)} enum instead");
+        }
+
+        public static bool GetKey(KeyCode key)
+        {
+            return GetKey(Convert(key));
+        }
+
         public static bool GetKeyDown(string name)
         {
             return ((KeyControl)Keyboard.current?[name.ToLower()])?.wasPressedThisFrame ?? false;
@@ -176,6 +194,11 @@ namespace AppMana.Compatibility
             return Keyboard.current?[key]?.wasPressedThisFrame ?? false;
         }
 
+        public static bool GetKeyDown(KeyCode key)
+        {
+            return GetKeyDown(Convert(key));
+        }
+
         public static bool GetKeyUp(string name)
         {
             return ((KeyControl)Keyboard.current?[name.ToLower()])?.wasReleasedThisFrame ?? false;
@@ -184,6 +207,11 @@ namespace AppMana.Compatibility
         public static bool GetKeyUp(Key key)
         {
             return Keyboard.current?[key]?.wasReleasedThisFrame ?? false;
+        }
+
+        public static bool GetKeyUp(KeyCode key)
+        {
+            return GetKeyUp(Convert(key));
         }
 
         public static bool GetMouseButton(int index)
@@ -223,8 +251,10 @@ namespace AppMana.Compatibility
         }
 
         public static Touch GetTouch(int index) => Touch.activeTouches[index];
-        
-        public static void ResetInputAxes() {}
+
+        public static void ResetInputAxes()
+        {
+        }
 
         private static void InitializeActionAsset()
         {

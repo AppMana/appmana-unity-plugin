@@ -6,6 +6,9 @@ using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
+using UnityEngine.UI;
 using PlayerPrefs = AppMana.Compatibility.PlayerPrefs;
 
 namespace AppManaPublic.Editor
@@ -58,6 +61,10 @@ namespace AppManaPublic.Editor
 
             try
             {
+                var remotePlayableConfigurations =
+                    FindObjectsByType<RemotePlayableConfiguration>(FindObjectsSortMode.None);
+                var myIndex = Array.IndexOf(remotePlayableConfigurations, m_Target);
+
                 EditorGUILayout.PropertyField(m_Camera,
                     new GUIContent { text = "Camera", tooltip = "Set this to the camera to stream for this player" });
                 if (m_Camera.objectReferenceValue == null)
@@ -70,25 +77,128 @@ namespace AppManaPublic.Editor
                     }
                 }
 
+                if (remotePlayableConfigurations.Length > 1 && remotePlayableConfigurations[0].camera != null)
+                {
+                    if (remotePlayableConfigurations.Select(configuration => configuration.camera?.targetDisplay ?? 0)
+                            .Distinct().Count() != remotePlayableConfigurations.Length)
+                    {
+                        EditorGUILayout.HelpBox(
+                            $"To visualize a multiplayer game correctly in the editor, each camera needs a distinct {nameof(Camera.targetDisplay)}. Then, create another Game view by right clicking on your existing one, then navigating to Add Tab, then choosing Game View. Finally, set the Target Display of the game view using the Display dropdown on the tab.",
+                            MessageType.Error);
+                        if (EditorGUILayout.LinkButton("Set distinct target displays."))
+                        {
+                            for (var i = 0; i < remotePlayableConfigurations.Length; i++)
+                            {
+                                var configuration = remotePlayableConfigurations[i];
+                                configuration.camera.targetDisplay = i;
+                                EditorUtility.SetDirty(configuration.camera);
+                            }
+                        }
+                    }
+                }
+
                 EditorGUILayout.PropertyField(m_AudioListener,
                     new GUIContent
                     {
                         text = "Audio Listener",
                         tooltip = "Set this to the audio listener for this player, or leave null to disable audio"
                     });
+                var audioListeners = FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
+                if (m_AudioListener.objectReferenceValue == null &&
+                    EditorGUILayout.LinkButton("Set to pre-existing audio listener or create one"))
+                {
+                    if (audioListeners.Length == 0)
+                    {
+                        var audioListener = new GameObject("Audio Listener");
+                        audioListeners = new[] { audioListener.AddComponent<AudioListener>() };
+                        EditorUtility.SetDirty(audioListener);
+                        Undo.RegisterCreatedObjectUndo(audioListener, "Undo Create Audio Listener");
+                    }
+
+                    m_AudioListener.objectReferenceValue = audioListeners[0];
+                }
+
+                if (audioListeners.Length > 1)
+                {
+                    EditorGUILayout.HelpBox(
+                        "You cannot use more than one AudioListener due to limitations in Unity.",
+                        MessageType.Error);
+                    if (EditorGUILayout.LinkButton("Delete the extra AudioListener"))
+                    {
+                        foreach (var audioListener in audioListeners[new Range(1, Index.End)])
+                        {
+                            if (m_AudioListener.objectReferenceValue == audioListener)
+                            {
+                                m_AudioListener.objectReferenceValue = audioListeners[0];
+                            }
+
+                            Undo.DestroyObjectImmediate(audioListener);
+                        }
+                    }
+                }
+
                 EditorGUILayout.PropertyField(m_Actions,
                     new GUIContent
                     {
                         text = "Actions Asset",
                         tooltip =
-                            "Leave null. In multiplayer games: duplicate the Input Actions Asset provided by the plugin into your own Assets/ directory, and set it here."
+                            "The Input Actions corresponding to this player."
                     });
+
+
+                if (m_Actions.objectReferenceValue == null &&
+                    EditorGUILayout.LinkButton("Create and assign input actions."))
+                {
+                    EditorGUILayout.HelpBox(
+                        "Assign an Input Actions Asset. This enables AppMana streamed inputs to work.",
+                        MessageType.Error);
+
+                    const string duplicateAndAssignDistinctInputActions = "Distinct Input Actions";
+                    const string sourcePath =
+                        "Packages/com.appmana.unity.public/AppManaPublic/Input Actions.inputactions";
+                    var targetPath = $"Assets/AppMana Input Actions.inputactions";
+                    if (!AssetDatabase.CopyAsset(sourcePath, targetPath))
+                    {
+                        throw new ArgumentException("could not copy");
+                    }
+
+                    AssetDatabase.Refresh();
+
+                    var newAsset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(targetPath);
+                    Undo.RegisterCreatedObjectUndo(newAsset, duplicateAndAssignDistinctInputActions);
+                    Undo.RegisterCompleteObjectUndo(target, duplicateAndAssignDistinctInputActions);
+                    m_Actions.objectReferenceValue = newAsset;
+
+                    if (remotePlayableConfigurations.Length == 1)
+                    {
+                        var inputSystemEventModule = FindAnyObjectByType<InputSystemUIInputModule>();
+                        if (inputSystemEventModule != null)
+                        {
+                            inputSystemEventModule.actionsAsset = (InputActionAsset)newAsset;
+                            EditorUtility.SetDirty(inputSystemEventModule);
+                        }
+                    }
+                }
+
                 EditorGUILayout.PropertyField(m_CanvasScalers,
                     new GUIContent
                     {
                         text = "Canvas Scalers",
                         tooltip = "Set this to canvas scalers for the player's canvas, used to adjust display DPI"
                     });
+                var relevantCanvasScalers = remotePlayableConfigurations.Length > 1
+                    ? m_Target.GetComponentsInChildren<CanvasScaler>(true)
+                    : FindObjectsByType<CanvasScaler>(FindObjectsSortMode.None);
+                if (m_CanvasScalers.arraySize != relevantCanvasScalers.Length &&
+                    EditorGUILayout.LinkButton("Assign missing canvas scalers"))
+                {
+                    m_CanvasScalers.ClearArray();
+                    for (var i = 0; i < relevantCanvasScalers.Length; i++)
+                    {
+                        m_CanvasScalers.InsertArrayElementAtIndex(i);
+                        m_CanvasScalers.GetArrayElementAtIndex(i).objectReferenceValue = relevantCanvasScalers[0];
+                    }
+                }
 
                 EditorGUILayout.PropertyField(m_OnPlayerConnected,
                     new GUIContent

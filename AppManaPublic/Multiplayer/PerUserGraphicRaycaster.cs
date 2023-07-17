@@ -9,6 +9,10 @@ using UnityEngine.UI;
 
 namespace AppMana.Multiplayer
 {
+    /// <summary>
+    /// Filters raycasts. If the pointer does not belong to the user associated with this raycaster, return no raycast
+    /// hits. Simplifies multiple players interacting with EventSystem.
+    /// </summary>
     public class PerUserGraphicRaycaster : GraphicRaycaster
     {
         private static FieldInfo activeEditorGameViewTargetField { get; }
@@ -27,6 +31,19 @@ namespace AppMana.Multiplayer
             }
         }
 
+        protected override void Awake()
+        {
+            m_RemotePlayableConfiguration ??= gameObject.GetComponentInParent<RemotePlayableConfiguration>() ??
+                                              gameObject.GetComponentInChildren<RemotePlayableConfiguration>();
+            if (m_RemotePlayableConfiguration == null)
+            {
+                Debug.LogError(
+                    $"Assign a {nameof(RemotePlayableConfiguration)} to the {nameof(PerUserGraphicRaycaster)} on {gameObject.name}, because none was found.");
+            }
+
+            base.Awake();
+        }
+
 
         [SerializeField] private RemotePlayableConfiguration m_RemotePlayableConfiguration;
 
@@ -38,7 +55,7 @@ namespace AppMana.Multiplayer
 
         public override void Raycast(PointerEventData eventData, List<RaycastResult> resultAppendList)
         {
-            if (eventData is ExtendedPointerEventData extendedPointerEventData)
+            if (eventData is ExtendedPointerEventData { device: not null } extendedPointerEventData)
             {
                 var user = InputUser.FindUserPairedToDevice(extendedPointerEventData.device);
                 if (m_RemotePlayableConfiguration?.user != user)
@@ -49,7 +66,8 @@ namespace AppMana.Multiplayer
 
             if (eventCamera == null)
             {
-                Debug.LogWarning($"Graphic raycaster on {gameObject.name} had a null event camera but a graphic raycaster");
+                Debug.LogWarning(
+                    $"Graphic raycaster on {gameObject.name} had a null event camera but a graphic raycaster");
             }
             else
             {

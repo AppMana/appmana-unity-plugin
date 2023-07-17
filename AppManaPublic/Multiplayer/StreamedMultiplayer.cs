@@ -29,16 +29,16 @@ namespace AppMana.Multiplayer
         public static StreamedMultiplayer instance { get; private set; }
         private int m_DisplayIndex = -1;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Inject()
         {
             var players = UnityUtilities.FindObjectsByType<RemotePlayableConfiguration>(true);
-            if (players.Length <= 1)
+            if (players.All(player => player.actions == null))
             {
                 return;
             }
 
-            if (UnityUtilities.FindFirstObjectByType<StreamedMultiplayer>() != null)
+            if (FindAnyObjectByType<StreamedMultiplayer>() != null)
             {
                 return;
             }
@@ -49,13 +49,8 @@ namespace AppMana.Multiplayer
 
         protected override void Awake()
         {
-            base.Awake();
             instance = this;
-        }
 
-        protected override void Start()
-        {
-            base.Start();
             var players = UnityUtilities.FindObjectsByType<RemotePlayableConfiguration>(true);
 
             // find the player inputs
@@ -71,23 +66,27 @@ namespace AppMana.Multiplayer
             {
                 // 3d
                 var physicsRaycaster = player.camera.GetComponent<PhysicsRaycaster>();
-                if (physicsRaycaster != null)
+                if (physicsRaycaster != null && physicsRaycaster is not PerUserPhysicsRaycaster)
                 {
                     var replacement = physicsRaycaster.gameObject.AddComponent<PerUserPhysicsRaycaster>();
                     replacement.eventMask = physicsRaycaster.eventMask;
                     replacement.remotePlayableConfiguration = player;
                     replacement.maxRayIntersections = physicsRaycaster.maxRayIntersections;
+                    Debug.LogWarning(
+                        $"{nameof(PhysicsRaycaster)} on {physicsRaycaster.gameObject.name} was replaced by a {nameof(PerUserPhysicsRaycaster)}. References to it, while rare, will be broken. Since you are making a multiplayer game, use the {nameof(PerUserPhysicsRaycaster)} instead");
                     Destroy(physicsRaycaster);
                 }
 
                 // 2d
                 var physics2dRaycaster = player.camera.GetComponent<Physics2DRaycaster>();
-                if (physics2dRaycaster != null)
+                if (physics2dRaycaster != null && physics2dRaycaster is not PerUserPhysics2DRaycaster)
                 {
                     var replacement = physics2dRaycaster.gameObject.AddComponent<PerUserPhysics2DRaycaster>();
                     replacement.eventMask = physics2dRaycaster.eventMask;
                     replacement.remotePlayableConfiguration = player;
                     replacement.maxRayIntersections = physics2dRaycaster.maxRayIntersections;
+                    Debug.LogWarning(
+                        $"{nameof(Physics2DRaycaster)} on {physicsRaycaster.gameObject.name} was replaced by a {nameof(PerUserPhysics2DRaycaster)}. References to it, while rare, will be broken. Since you are making a multiplayer game, use the {nameof(PerUserPhysics2DRaycaster)} instead");
                     Destroy(physics2dRaycaster);
                 }
 
@@ -95,33 +94,44 @@ namespace AppMana.Multiplayer
                 var canvasRaycasters = player.camera.GetComponentsInChildren<GraphicRaycaster>(true);
                 foreach (var canvasRaycaster in canvasRaycasters)
                 {
+                    if (canvasRaycaster is PerUserGraphicRaycaster)
+                    {
+                        continue;
+                    }
+
                     var replacement = canvasRaycaster.gameObject.AddComponent<PerUserGraphicRaycaster>();
                     replacement.blockingMask = canvasRaycaster.blockingMask;
                     replacement.blockingObjects = canvasRaycaster.blockingObjects;
                     replacement.ignoreReversedGraphics = canvasRaycaster.ignoreReversedGraphics;
                     replacement.remotePlayableConfiguration = player;
+                    Debug.LogWarning(
+                        $"{nameof(GraphicRaycaster)} on {canvasRaycaster.gameObject.name} was replaced by a {nameof(PerUserGraphicRaycaster)}. References to it, while rare, will be broken. Since you are making a multiplayer game, use the {nameof(PerUserGraphicRaycaster)} instead");
                     Destroy(canvasRaycaster);
                 }
             }
 
 #if UNITY_EDITOR
-            // find the editor mouse
-            var editorMouse = InputSystem.devices.OfType<Mouse>().FirstOrDefault();
-            var editorKeyboard = InputSystem.devices.OfType<Keyboard>().FirstOrDefault();
-            Assert.IsNotNull(editorMouse, "editorMouse != null");
+            // find the local mouse
+            var localMouse = InputSystem.devices.OfType<Mouse>().FirstOrDefault();
+            var localKeyboard = InputSystem.devices.OfType<Keyboard>().FirstOrDefault();
+            // todo: enable touchscreen support
 
-            // create a fake mouse device for each player
-            var displayToMouse = players
+            // create a fake mouse & keyboard device for each player
+            var displayToMouseKeyboard = players
                 // players that have streaming enabled in editor will be connected via an offer
                 .Where(player => !player.enableStreamingInEditor)
                 .Select(player =>
                 {
-                    var mouse = InputSystem.AddDevice<Mouse>($"MouseEditorPlayer{player.user.id}");
+                    var mouse = InputSystem.AddDevice<Mouse>($"EditorMousePlayer{player.user.id}");
                     player.PerformPairingWithDevice(mouse);
                     mouse.AddTo(this);
-                    return (player, mouse);
+
+                    var keyboard = InputSystem.AddDevice<Keyboard>($"EditorKeyboardPlayer{player.user.id}");
+                    player.PerformPairingWithDevice(keyboard);
+                    keyboard.AddTo(this);
+                    return (player, mouse, keyboard);
                 })
-                .ToDictionary(tuple => tuple.player.camera.targetDisplay, tuple => tuple.mouse);
+                .ToDictionary(tuple => tuple.player.camera.targetDisplay, tuple => tuple);
 
             // unpair pre-existing (editor) devices
             foreach (var player in players)
@@ -134,8 +144,8 @@ namespace AppMana.Multiplayer
 
                 try
                 {
-                    user.UnpairDevice(editorMouse);
-                    user.UnpairDevice(editorKeyboard);
+                    user.UnpairDevice(localMouse);
+                    user.UnpairDevice(localKeyboard);
                 }
                 catch (Exception exception)
                 {
@@ -166,7 +176,7 @@ namespace AppMana.Multiplayer
                             return;
                         }
 
-                        displayId = (int) displayField.GetValue(mouseOverWindow);
+                        displayId = (int)displayField.GetValue(mouseOverWindow);
                     }
 
                     if (mouseOverWindow != null && displayId != m_DisplayIndex && displayId != -1)
@@ -179,11 +189,11 @@ namespace AppMana.Multiplayer
                 .AddTo(this);
 
 
-            // listen to editor mouse events, cancel them then repeat them onto the appropriate player based on the
-            // display that the mouse presented on
+            // listen to editor mouse and keyboard events, cancel them then repeat them onto the appropriate player
+            // based on the display that the mouse or keyboard presented on
             // release buttons
             Observable.Select(InputSystem.onEvent
-                        .ForDevice(editorMouse),
+                        .ForDevice(localMouse),
                     inputEventPtr => (inputEventPtr, m_DisplayIndex))
                 .DistinctUntilChanged(tuple => tuple.m_DisplayIndex)
                 .Subscribe(tuple =>
@@ -193,14 +203,14 @@ namespace AppMana.Multiplayer
                     unsafe
                     {
                         var stateEventPtr = StateEvent.From(inputEventPtr);
-                        var mouseState = (MouseState*) stateEventPtr->state;
+                        var mouseState = (MouseState*)stateEventPtr->state;
                         mouseState->buttons = 0;
                     }
                 })
                 .AddTo(this);
 
             InputSystem.onEvent
-                .ForDevice(editorMouse)
+                .ForDevice(localMouse)
                 .Subscribe(inputEventPtr =>
                 {
                     if (m_DisplayIndex == -1)
@@ -209,23 +219,59 @@ namespace AppMana.Multiplayer
                         return;
                     }
 
-                    if (!displayToMouse.ContainsKey(m_DisplayIndex))
+                    if (!displayToMouseKeyboard.ContainsKey(m_DisplayIndex))
                     {
                         return;
                     }
 
-                    var targetDevice = displayToMouse[m_DisplayIndex];
+                    var targetDevice = displayToMouseKeyboard[m_DisplayIndex].mouse;
 
                     unsafe
                     {
                         var stateEventPtr = StateEvent.From(inputEventPtr);
                         var mouseState = stateEventPtr->GetState<MouseState>();
+                        mouseState.displayIndex = (ushort)m_DisplayIndex;
                         InputSystem.QueueStateEvent(targetDevice, mouseState, inputEventPtr.time);
                     }
 
                     inputEventPtr.handled = true;
                 })
                 .AddTo(this);
+
+            InputSystem.onEvent
+                .ForDevice(localKeyboard)
+                .Subscribe(inputEventPtr =>
+                {
+                    if (m_DisplayIndex == -1)
+                    {
+                        // release the buttons for the other devices
+                        return;
+                    }
+
+                    if (!displayToMouseKeyboard.ContainsKey(m_DisplayIndex))
+                    {
+                        return;
+                    }
+
+                    var targetDevice = displayToMouseKeyboard[m_DisplayIndex].keyboard;
+
+                    unsafe
+                    {
+                        if (inputEventPtr.type == KeyboardState.Format)
+                        {
+                            var stateEventPtr = StateEvent.From(inputEventPtr);
+                            var keyboardState = stateEventPtr->GetState<KeyboardState>();
+                            InputSystem.QueueStateEvent(targetDevice, keyboardState, inputEventPtr.time);
+                        }
+                        else if (inputEventPtr.type == TextEvent.Type)
+                        {
+                            var keysEventPtr = TextEvent.From(inputEventPtr);
+                            InputSystem.QueueTextEvent(targetDevice, (char)keysEventPtr->character);
+                        }
+                    }
+
+                    inputEventPtr.handled = true;
+                });
 #endif
         }
 

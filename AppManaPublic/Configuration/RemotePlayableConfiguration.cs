@@ -70,7 +70,9 @@ namespace AppManaPublic.Configuration
 
         [SerializeField] internal bool m_EnablePlayerPrefs = true;
         [SerializeField] internal bool m_EnableUrlParameters;
-        [FormerlySerializedAs("m_DefaultUrlParameters")] [SerializeField] internal StringTuple[] m_OfflineUrlParameters = new StringTuple[0];
+
+        [FormerlySerializedAs("m_DefaultUrlParameters")] [SerializeField]
+        internal StringTuple[] m_OfflineUrlParameters = new StringTuple[0];
 
         /// <summary>
         /// Set the URL parameters when this project is offline, for example when running in the editor.
@@ -92,8 +94,8 @@ namespace AppManaPublic.Configuration
         /// </summary>
         public UnityEvent onPlayerDisconnected => m_OnPlayerDisconnected;
 
-        private InputUser m_User;
-        internal InputUser user => m_User;
+        internal InputUser user { get; private set; }
+
         private int m_Index;
 
         internal int index => m_Index;
@@ -101,7 +103,7 @@ namespace AppManaPublic.Configuration
         internal static int counter = -1;
         private RemotePlayerPrefs m_PlayerPrefs;
         private UrlParameters m_UrlParameters;
-        
+
 
         /// <summary>
         /// This player's instance of the input actions asset.
@@ -130,6 +132,7 @@ namespace AppManaPublic.Configuration
             {
                 await m_UrlParameters.Update();
             }
+
             m_OnPlayerConnected?.Invoke();
         }
 
@@ -158,6 +161,7 @@ namespace AppManaPublic.Configuration
                 });
             }
 
+            // single player is done
             if (m_Actions == null)
             {
                 if (count > 1)
@@ -179,19 +183,18 @@ namespace AppManaPublic.Configuration
                 return;
             }
 
-            // clone the actions
-            var newActionsName = m_Actions.name;
-            m_Actions = Instantiate(m_Actions);
-            m_Actions.name = $"{newActionsName} for Player {m_User.id}";
-
             // associate with a user, multiple players
-            if (count <= 1)
+            if (!user.valid)
             {
-                return;
+                user = InputUser.CreateUserWithoutPairedDevices();
             }
 
-            m_User = InputUser.CreateUserWithoutPairedDevices();
-            m_User.AssociateActionsWithUser(m_Actions);
+            // duplicate the actions
+            var originalName = m_Actions.name;
+            m_Actions = Instantiate(m_Actions);
+            m_Actions.name = $"{originalName} (Player {index})";
+            user.AssociateActionsWithUser(m_Actions);
+            // use MultiplayerInputActionReference wherever possible
 
             // Find the input modules associated with this user
             // todo: make this configurable
@@ -211,7 +214,7 @@ namespace AppManaPublic.Configuration
 
         internal void PerformPairingWithDevice(InputDevice device)
         {
-            m_User = InputUser.PerformPairingWithDevice(device, m_User);
+            user = InputUser.PerformPairingWithDevice(device, user);
         }
 
         public new Camera camera
@@ -256,7 +259,23 @@ namespace AppManaPublic.Configuration
 
         protected virtual void OnEnableImpl()
         {
-            PluginBase.EnsurePlugins();
+            // if we're running locally, associate the devices we find automatically
+            // in the case this is built with the private plugin, the private plugin's system will associate the user
+            // with all devices instead
+            // because there may be builds with multiple players, eventually this all needs to be handled by
+            // StreamedMultiplayer
+            if (PluginBase.EnsurePlugins() == 0
+                && !Application.isEditor
+                && !Application.isBatchMode
+                // only associate the devices with the player that's rendering to the primary backbuffer
+                // i.e. the user we can actually see
+                && camera?.targetDisplay == 0)
+            {
+                foreach (var device in InputSystem.devices)
+                {
+                    PerformPairingWithDevice(device);
+                }
+            }
         }
 
         protected sealed override void OnDisable()
