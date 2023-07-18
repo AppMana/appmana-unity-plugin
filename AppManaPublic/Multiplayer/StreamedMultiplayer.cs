@@ -38,7 +38,7 @@ namespace AppMana.Multiplayer
                 return;
             }
 
-            if (FindAnyObjectByType<StreamedMultiplayer>() != null)
+            if (UnityUtilities.FindFirstObjectByType<StreamedMultiplayer>() != null)
             {
                 return;
             }

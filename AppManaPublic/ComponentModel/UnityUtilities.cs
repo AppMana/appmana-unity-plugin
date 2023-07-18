@@ -6,17 +6,31 @@ namespace AppMana.ComponentModel
     public static class UnityUtilities
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T FindFirstObjectByType<T>() where T : Component
+        public static T FindFirstObjectByType<T>() where T : UnityEngine.Object
         {
-            return Object.FindAnyObjectByType<T>();
+#if UNITY_2023_1_OR_NEWER
+            return Object.FindFirstObjectByType<T>();
+#else
+            return UnityEngine.Object.FindObjectOfType<T>();
+#endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T[] FindObjectsByType<T>(bool includeInactive = false) where T : Component
+        public static T[] FindObjectsByType<T>(bool includeInactive = false) where T : UnityEngine.Object
         {
+#if UNITY_2023_1_OR_NEWER
             return Object.FindObjectsByType<T>(
                 includeInactive ? FindObjectsInactive.Include : FindObjectsInactive.Exclude,
                 FindObjectsSortMode.InstanceID);
+#else
+            return UnityEngine.Object.FindObjectsOfType<T>(includeInactive);
+#endif
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T FindAnyObjectByType<T>() where T : UnityEngine.Object
+        {
+            return FindFirstObjectByType<T>();
         }
     }
 }

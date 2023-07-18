@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using AppMana.ComponentModel;
 using AppManaPublic.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -62,7 +63,7 @@ namespace AppManaPublic.Editor
             try
             {
                 var remotePlayableConfigurations =
-                    FindObjectsByType<RemotePlayableConfiguration>(FindObjectsSortMode.None);
+                    UnityUtilities.FindObjectsByType<RemotePlayableConfiguration>();
                 var myIndex = Array.IndexOf(remotePlayableConfigurations, m_Target);
 
                 EditorGUILayout.PropertyField(m_Camera,
@@ -103,7 +104,7 @@ namespace AppManaPublic.Editor
                         text = "Audio Listener",
                         tooltip = "Set this to the audio listener for this player, or leave null to disable audio"
                     });
-                var audioListeners = FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
+                var audioListeners = UnityUtilities.FindObjectsByType<AudioListener>();
                 if (m_AudioListener.objectReferenceValue == null &&
                     EditorGUILayout.LinkButton("Set to pre-existing audio listener or create one"))
                 {
@@ -171,7 +172,7 @@ namespace AppManaPublic.Editor
 
                     if (remotePlayableConfigurations.Length == 1)
                     {
-                        var inputSystemEventModule = FindAnyObjectByType<InputSystemUIInputModule>();
+                        var inputSystemEventModule = UnityUtilities.FindAnyObjectByType<InputSystemUIInputModule>();
                         if (inputSystemEventModule != null)
                         {
                             inputSystemEventModule.actionsAsset = (InputActionAsset)newAsset;
@@ -188,7 +189,7 @@ namespace AppManaPublic.Editor
                     });
                 var relevantCanvasScalers = remotePlayableConfigurations.Length > 1
                     ? m_Target.GetComponentsInChildren<CanvasScaler>(true)
-                    : FindObjectsByType<CanvasScaler>(FindObjectsSortMode.None);
+                    : UnityUtilities.FindObjectsByType<CanvasScaler>();
                 if (m_CanvasScalers.arraySize != relevantCanvasScalers.Length &&
                     EditorGUILayout.LinkButton("Assign missing canvas scalers"))
                 {
