@@ -19,14 +19,14 @@ using Observable = UniRx.Observable;
 namespace AppMana.Multiplayer
 {
     /// <summary>
-    /// Enables streaming multiplayer in an AppMana-hosted Unity game.
+    /// Enables streaming input in an AppMana-hosted Unity game.
     /// </summary>
     /// Use the singleton accessible from <see cref="instance"/> to make multiplayer-specific API calls against the
     /// AppMana backend.
     [DefaultExecutionOrder(-1000)]
-    public class StreamedMultiplayer : UIBehaviour, ILobby
+    public class StreamedInputs : UIBehaviour, ILobby
     {
-        public static StreamedMultiplayer instance { get; private set; }
+        public static StreamedInputs instance { get; private set; }
         private int m_DisplayIndex = -1;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -38,13 +38,13 @@ namespace AppMana.Multiplayer
                 return;
             }
 
-            if (UnityUtilities.FindFirstObjectByType<StreamedMultiplayer>() != null)
+            if (UnityUtilities.FindFirstObjectByType<StreamedInputs>() != null)
             {
                 return;
             }
 
-            var gameObject = new GameObject($"({nameof(StreamedMultiplayer)})");
-            gameObject.AddComponent<StreamedMultiplayer>();
+            var gameObject = new GameObject($"({nameof(StreamedInputs)})");
+            gameObject.AddComponent<StreamedInputs>();
         }
 
         protected override void Awake()
@@ -114,8 +114,31 @@ namespace AppMana.Multiplayer
             // find the local mouse
             var localMouse = InputSystem.devices.OfType<Mouse>().FirstOrDefault();
             var localKeyboard = InputSystem.devices.OfType<Keyboard>().FirstOrDefault();
-            // todo: enable touchscreen support
 
+            // in single player, we can associate the editor controls directly
+            if (players.Length == 1)
+            {
+                var player = players[0];
+                if (player.enableStreamingInEditor)
+                {
+                    InputSystem.DisableDevice(localMouse);
+                    InputSystem.DisableDevice(localKeyboard);
+                    Observable.OnceApplicationQuit()
+                        .Subscribe(_ =>
+                        {
+                            InputSystem.EnableDevice(localMouse);
+                            InputSystem.EnableDevice(localKeyboard);
+                        })
+                        .AddTo(this);
+                }
+                else
+                {
+                    player.PerformPairingWithDevice(localMouse);
+                    player.PerformPairingWithDevice(localKeyboard);    
+                }
+                return;
+            }
+            
             // create a fake mouse & keyboard device for each player
             var displayToMouseKeyboard = players
                 // players that have streaming enabled in editor will be connected via an offer

@@ -121,20 +121,18 @@ namespace AppManaPublic.Editor
 
                 if (audioListeners.Length > 1)
                 {
-                    EditorGUILayout.HelpBox(
-                        "You cannot use more than one AudioListener due to limitations in Unity.",
-                        MessageType.Error);
-                    if (EditorGUILayout.LinkButton("Delete the extra AudioListener"))
+                    if (audioListeners.Count(al => al.isActiveAndEnabled) == 1 &&
+                        audioListeners.First(al => al.isActiveAndEnabled) != m_AudioListener.objectReferenceValue)
                     {
-                        foreach (var audioListener in audioListeners[new Range(1, Index.End)])
-                        {
-                            if (m_AudioListener.objectReferenceValue == audioListener)
-                            {
-                                m_AudioListener.objectReferenceValue = audioListeners[0];
-                            }
-
-                            Undo.DestroyObjectImmediate(audioListener);
-                        }
+                        EditorGUILayout.HelpBox(
+                            $"While only one {nameof(AudioListener)} is active, it isn't referenced on this {nameof(RemotePlayableConfiguration)}. You will not hear sound.",
+                            MessageType.Warning);
+                    }
+                    else
+                    {
+                        EditorGUILayout.HelpBox(
+                            $"To hear sound, make sure exactly one {nameof(AudioListener)} is active and that it is the one referenced on the {nameof(RemotePlayableConfiguration)}.",
+                            MessageType.Error);
                     }
                 }
 
