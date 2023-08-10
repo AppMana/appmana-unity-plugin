@@ -5,6 +5,7 @@ using System.Linq;
 using AppManaPublic.Configuration;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 namespace AppMana.ComponentModel
@@ -23,7 +24,7 @@ namespace AppMana.ComponentModel
         }
 
 
-        protected virtual string localStorageKey => "appmanaPlayerPrefs";
+        protected const string localStorageKey = "appmanaPlayerPrefs";
 
         public void Dispose()
         {
@@ -42,7 +43,7 @@ return JSON.parse(data);
 "
                 , () =>
                 {
-                    var index = ((RemotePlayableConfiguration)m_EvalInPage).index;
+                    var index = ((RemotePlayableConfiguration) m_EvalInPage).index;
                     return JsonConvert.DeserializeObject<State>(
                         UnityEngine.PlayerPrefs.GetString($"{localStorageKey}{index}",
                             "null")) ?? new State();
@@ -60,7 +61,7 @@ localStorage.setItem(""{localStorageKey}"", json);
 return true;
 ", () =>
                 {
-                    var index = ((RemotePlayableConfiguration)m_EvalInPage).index;
+                    var index = ((RemotePlayableConfiguration) m_EvalInPage).index;
                     UnityEngine.PlayerPrefs.SetString($"{localStorageKey}{index}", json);
                     UnityEngine.PlayerPrefs.Save();
                     return true;
@@ -78,7 +79,7 @@ return true;
         {
             Validate();
 
-            foreach (var dict in new[] { (IDictionary)m_State.strings, m_State.ints, m_State.floats })
+            foreach (var dict in new[] {(IDictionary) m_State.strings, m_State.ints, m_State.floats})
             {
                 dict.Clear();
             }
@@ -88,7 +89,7 @@ return true;
         {
             Validate();
 
-            foreach (var dict in new[] { (IDictionary)m_State.strings, m_State.ints, m_State.floats })
+            foreach (var dict in new[] {(IDictionary) m_State.strings, m_State.ints, m_State.floats})
             {
                 dict.Remove(key);
             }
@@ -98,7 +99,7 @@ return true;
         {
             Validate();
 
-            return new[] { (IDictionary)m_State.strings, m_State.ints, m_State.floats }.Any(dict =>
+            return new[] {(IDictionary) m_State.strings, m_State.ints, m_State.floats}.Any(dict =>
                 dict.Contains(key));
         }
 
@@ -151,5 +152,21 @@ return true;
             public Dictionary<string, int> ints = new();
             public Dictionary<string, string> strings = new();
         }
+
+#if UNITY_EDITOR
+        public static void EditorClearPlayerPrefs()
+        {
+            for (var i = -1; i < 32; i++)
+            {
+                var key = $"{localStorageKey}{i}";
+                if (PlayerPrefs.HasKey(key))
+                {
+                    PlayerPrefs.DeleteKey(key);
+                }
+            }
+
+            PlayerPrefs.Save();
+        }
+#endif
     }
 }

@@ -343,5 +343,16 @@ namespace AppManaPublic.Configuration
         {
             m_OnPlayerDisconnected?.Invoke();
         }
+
+#if UNITY_EDITOR
+        /// <summary>
+        /// Clears the player prefs in the editor, thereby also clearing the player prefs in the facade remotePlayerPrefs
+        /// </summary>
+        [ContextMenu("Clear Player Prefs")]
+        public void ClearPlayerPrefs()
+        {
+            RemotePlayerPrefs.EditorClearPlayerPrefs();
+        }
+#endif
     }
 }
