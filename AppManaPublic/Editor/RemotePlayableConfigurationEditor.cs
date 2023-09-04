@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
@@ -111,9 +112,7 @@ namespace AppManaPublic.Editor
                     if (audioListeners.Length == 0)
                     {
                         var audioListener = new GameObject("Audio Listener");
-                        audioListeners = new[] { audioListener.AddComponent<AudioListener>() };
-                        EditorUtility.SetDirty(audioListener);
-                        Undo.RegisterCreatedObjectUndo(audioListener, "Undo Create Audio Listener");
+                        audioListeners = new[] { Undo.AddComponent<AudioListener>(audioListener) };
                     }
 
                     m_AudioListener.objectReferenceValue = audioListeners[0];
@@ -143,7 +142,23 @@ namespace AppManaPublic.Editor
                         tooltip =
                             "The Input Actions corresponding to this player."
                     });
-
+                var standaloneInputModules = UnityUtilities.FindObjectsByType<StandaloneInputModule>();
+                if (m_Actions.objectReferenceValue != null && standaloneInputModules.Length > 0)
+                {
+                    EditorGUILayout.HelpBox(
+                        "You have EventSystem objects with StandaloneInputModule, which isn't compatible.",
+                        MessageType.Error);
+                    if (EditorGUILayout.LinkButton("Replace with Input System Event System modules."))
+                    {
+                        foreach (var standaloneInputModule in standaloneInputModules)
+                        {
+                            var go = standaloneInputModule.gameObject;
+                            Undo.DestroyObjectImmediate(standaloneInputModule);
+                            var newModule = Undo.AddComponent<InputSystemUIInputModule>(go);
+                            newModule.actionsAsset = (InputActionAsset)m_Actions.objectReferenceValue;
+                        }
+                    }
+                }
 
                 if (m_Actions.objectReferenceValue == null &&
                     EditorGUILayout.LinkButton("Create and assign input actions."))
