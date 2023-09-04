@@ -152,14 +152,16 @@ namespace AppManaPublic.Configuration
             var count = UnityUtilities.FindObjectsByType<RemotePlayableConfiguration>(true).Length;
 
             // if we're in the editor, simulate an on player connected event
-            if (Application.isEditor && !m_StreamInEditMode)
+            UniTask.Void(async () =>
             {
-                UniTask.Void(async () =>
+                var runningStandalone = PluginBase.EnsurePlugins() == 0 && !Application.isBatchMode && !Application.isEditor;
+                var runningInEditorAndNotStreaming = Application.isEditor && !m_StreamInEditMode;
+                if (runningStandalone || runningInEditorAndNotStreaming)
                 {
-                    await UniTask.Delay(TimeSpan.FromSeconds(1f), DelayType.Realtime);
+                    await UniTask.Delay(TimeSpan.FromSeconds(Application.isEditor ? 1f : 0f), DelayType.Realtime);
                     await OnPlayerConnected();
-                });
-            }
+                }
+            });
 
             // single player is done
             if (m_Actions == null)
