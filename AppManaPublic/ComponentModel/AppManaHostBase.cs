@@ -17,5 +17,7 @@ namespace AppMana.ComponentModel
             string javascript, 
             RemotePlayableConfiguration player = null,
             bool ignoreResult = false);
+
+        internal abstract void EnableAugmentedReality();
     }
 }

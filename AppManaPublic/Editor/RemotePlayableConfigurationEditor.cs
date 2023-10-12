@@ -30,7 +30,10 @@ namespace AppManaPublic.Editor
         private SerializedProperty m_StreamInEditMode;
         private SerializedProperty m_EnablePlayerPrefs;
         private SerializedProperty m_EnableUrlParameters;
+        private SerializedProperty m_EnableAugmentedReality;
         private SerializedProperty m_OfflineUrlParameters;
+        private SerializedProperty m_RotationCoefficient;
+        private SerializedProperty m_PositionCoefficient;
 
         static RemotePlayableConfigurationEditor()
         {
@@ -53,8 +56,14 @@ namespace AppManaPublic.Editor
                 serializedObject.FindProperty(nameof(RemotePlayableConfiguration.m_EnablePlayerPrefs));
             m_EnableUrlParameters =
                 serializedObject.FindProperty(nameof(RemotePlayableConfiguration.m_EnableUrlParameters));
+            m_EnableAugmentedReality =
+                serializedObject.FindProperty(nameof(RemotePlayableConfiguration.m_EnableAugmentedReality));
             m_OfflineUrlParameters =
                 serializedObject.FindProperty(nameof(RemotePlayableConfiguration.m_OfflineUrlParameters));
+            m_RotationCoefficient =
+                serializedObject.FindProperty(nameof(RemotePlayableConfiguration.m_RotationCoefficient));
+            m_PositionCoefficient =
+                serializedObject.FindProperty(nameof(RemotePlayableConfiguration.m_PositionCoefficient));
         }
 
         public override void OnInspectorGUI()
@@ -235,6 +244,14 @@ namespace AppManaPublic.Editor
                             $"Enables loading the PlayerPrefs from the user's local storage in their browser. Access the player's PlayerPrefs using {nameof(RemotePlayableConfiguration)}.{nameof(RemotePlayableConfiguration.playerPrefs)}. You can also use {nameof(AppMana)}.{nameof(AppMana.Compatibility)}.{nameof(PlayerPrefs)} for compatibility with existing usage of PlayerPrefs."
                     });
 
+                EditorGUILayout.PropertyField(m_EnableAugmentedReality,
+                    new GUIContent
+                    {
+                        text = "Enable Augmented Reality",
+                        tooltip =
+                            $"todo"
+                    });
+
                 EditorGUILayout.PropertyField(m_EnableUrlParameters,
                     new GUIContent
                     {
@@ -275,6 +292,11 @@ namespace AppManaPublic.Editor
                                 $"URL Parameters: {m_Target.urlParameters?.As<JObject>()?.ToString(Formatting.Indented) ?? "(null)"}"
                         });
                     }
+
+                    EditorGUILayout.PropertyField(m_PositionCoefficient,
+                        new GUIContent { text = "Position Coefficient" });
+                    EditorGUILayout.PropertyField(m_RotationCoefficient,
+                        new GUIContent { text = "Rotiation Coefficient" });
                 }
                 else
                 {

@@ -70,9 +70,16 @@ namespace AppManaPublic.Configuration
 
         [SerializeField] internal bool m_EnablePlayerPrefs = true;
         [SerializeField] internal bool m_EnableUrlParameters;
+        [SerializeField] internal bool m_EnableAugmentedReality;
 
         [FormerlySerializedAs("m_DefaultUrlParameters")] [SerializeField]
         internal StringTuple[] m_OfflineUrlParameters = new StringTuple[0];
+
+        /// <summary>
+        /// These are used for work-in-progress support of augmented reality features.
+        /// </summary>
+        [SerializeField] internal Vector4 m_RotationCoefficient = new(1, -1, 1, 1);
+        [SerializeField] internal Vector3 m_PositionCoefficient = new(1, 1, 1);
 
         /// <summary>
         /// Set the URL parameters when this project is offline, for example when running in the editor.
@@ -149,12 +156,22 @@ namespace AppManaPublic.Configuration
                 m_UrlParameters = new UrlParameters(this, m_OfflineUrlParameters);
             }
 
+            if (m_EnableAugmentedReality)
+            {
+                UniTask.Void(async () =>
+                {
+                    await UniTask.DelayFrame(1);
+                    AppManaHostBase.instance.EnableAugmentedReality();
+                });
+            }
+
             var count = UnityUtilities.FindObjectsByType<RemotePlayableConfiguration>(true).Length;
 
             // if we're in the editor, simulate an on player connected event
             UniTask.Void(async () =>
             {
-                var runningStandalone = PluginBase.EnsurePlugins() == 0 && !Application.isBatchMode && !Application.isEditor;
+                var runningStandalone =
+                    PluginBase.EnsurePlugins() == 0 && !Application.isBatchMode && !Application.isEditor;
                 var runningInEditorAndNotStreaming = Application.isEditor && !m_StreamInEditMode;
                 if (runningStandalone || runningInEditorAndNotStreaming)
                 {
