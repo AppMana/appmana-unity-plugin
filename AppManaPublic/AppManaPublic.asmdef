@@ -8,7 +8,10 @@
         "UnityEngine.UI",
         "Unity.TextMeshPro",
         "UniTask",
-        "UniRx"
+        "UniRx",
+        "Unity.XR.ARSubsystems",
+        "Unity.XR.Management",
+        "Unity.XR.CoreUtils"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -37,6 +40,16 @@
             "name": "com.unity.textmeshpro",
             "expression": "1.0.0",
             "define": "TMP"
+        },
+        {
+            "name": "com.unity.xr.arfoundation",
+            "expression": "1.0.0",
+            "define": "AR_FOUNDATION"
+        },
+        {
+            "name": "com.unity.modules.xr",
+            "expression": "1.0.0",
+            "define": "CORE_UTILS"
         }
     ],
     "noEngineReferences": false

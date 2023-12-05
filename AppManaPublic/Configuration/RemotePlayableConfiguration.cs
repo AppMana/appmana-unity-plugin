@@ -12,6 +12,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.InputSystem.Users;
+using UnityEngine.InputSystem.XR;
 using UnityEngine.Scripting;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -79,6 +80,7 @@ namespace AppManaPublic.Configuration
         /// These are used for work-in-progress support of augmented reality features.
         /// </summary>
         [SerializeField] internal Vector4 m_RotationCoefficient = new(1, -1, 1, 1);
+
         [SerializeField] internal Vector3 m_PositionCoefficient = new(1, 1, 1);
 
         /// <summary>
@@ -227,6 +229,28 @@ namespace AppManaPublic.Configuration
             {
                 tmpInputFieldModule.actionsAsset = m_Actions;
             }
+
+#if UNITY_INPUTSYSTEM
+            foreach (var trackedPoseDriver in GetComponentsInChildren<TrackedPoseDriver>(true))
+            {
+                if (trackedPoseDriver.positionInput.reference != null)
+                {
+                    trackedPoseDriver.positionInput =
+                        new InputActionProperty(
+                            m_Actions.FindReference(trackedPoseDriver.positionInput.reference.action.name));
+                }
+
+                if (trackedPoseDriver.rotationInput.reference != null)
+                {
+                    trackedPoseDriver.rotationInput =
+                        new InputActionProperty(
+                            m_Actions.FindReference(trackedPoseDriver.rotationInput.reference.action.name));
+                }
+            }
+#endif
+
+            var findObjectsByType = UnityUtilities.FindObjectsByType<InputActionReference>();
+            Debug.Log(findObjectsByType);
 
             m_Actions.Enable();
         }

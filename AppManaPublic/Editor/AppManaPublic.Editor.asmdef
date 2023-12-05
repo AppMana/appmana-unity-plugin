@@ -7,7 +7,10 @@
         "UnityEditor.TestRunner",
         "AppManaPublic",
         "Unity.TextMeshPro.Editor",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Unity.XR.Management",
+        "Unity.XR.Management.Editor",
+        "Unity.XR.CoreUtils"
     ],
     "includePlatforms": [
         "Editor"
@@ -23,6 +26,11 @@
             "name": "com.unity.textmeshpro",
             "expression": "",
             "define": "TMP_EDITOR"
+        },
+        {
+            "name": "com.unity.xr.arfoundation",
+            "expression": "1.0.0",
+            "define": "AR_FOUNDATION"
         }
     ],
     "noEngineReferences": false

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using AppMana.InteractionToolkit;
 using UniRx;
 using UnityEngine;
@@ -154,6 +155,25 @@ namespace AppMana.ComponentModel
 
                     return Observable.Return((activeControl.keyCode, activeControl.scanCode));
                 });
+        }
+
+        /// <summary>
+        /// Creates an input action reference for the action with the specified name
+        /// </summary>
+        /// <param name="actionsAsset"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static InputActionReference FindReference(this InputActionAsset actionsAsset, string name)
+        {
+            if (name.StartsWith("m_"))
+            {
+                name = name.Substring("m_".Length);
+            }
+
+            return InputActionReference.Create(actionsAsset.actionMaps
+                .SelectMany(map => map.actions)
+                .FirstOrDefault(action =>
+                    string.Equals(action.name, name, StringComparison.InvariantCultureIgnoreCase)));
         }
     }
 }

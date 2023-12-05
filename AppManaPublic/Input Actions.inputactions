@@ -78,7 +78,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "TrackedDevicePosition",
+                    "name": "XR Camera Position",
                     "type": "PassThrough",
                     "id": "24908448-c609-4bc3-a128-ea258674378a",
                     "expectedControlType": "Vector3",
@@ -87,7 +87,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "TrackedDeviceOrientation",
+                    "name": "XR Camera Orientation",
                     "type": "PassThrough",
                     "id": "9caa3d8a-6b2f-4e8e-8bad-6ede561bd9be",
                     "expectedControlType": "Quaternion",
@@ -509,7 +509,29 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "XR",
-                    "action": "TrackedDevicePosition",
+                    "action": "XR Camera Position",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6ce620d5-a9cc-4cc5-bc10-5e6c350fdf6a",
+                    "path": "<HandheldARInputDevice>/devicePosition",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XR",
+                    "action": "XR Camera Position",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "65598ccd-3a6a-4f93-af57-2f716ba811a7",
+                    "path": "<RemoteHandheldARInputDevice>/devicePosition",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XR",
+                    "action": "XR Camera Position",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -520,7 +542,29 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "XR",
-                    "action": "TrackedDeviceOrientation",
+                    "action": "XR Camera Orientation",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "cf067af2-66a7-4ab4-ad06-e404a227653f",
+                    "path": "<HandheldARInputDevice>/deviceRotation",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XR",
+                    "action": "XR Camera Orientation",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d2e4ef23-2efe-4891-bae9-e7caf9e3df11",
+                    "path": "<RemoteHandheldARInputDevice>/deviceRotation",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XR",
+                    "action": "XR Camera Orientation",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
