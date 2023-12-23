@@ -9,12 +9,17 @@ using UnityEngine.InputSystem;
 
 namespace AppMana.InteractionToolkit
 {
+    /// <summary>
+    /// Implements a Cinemachine input provider for Input System that also takes into consideration when a <see cref="Pointer"/> is pressed.
+    /// </summary>
+    /// <para>This is used to implement a draggable or orbiting camera.</para>
     public partial class CinemachinePressableInputProvider :
 #if CINEMACHINE
-        CinemachineInputProvider
+        CinemachineInputProvider,
 #else
-        MonoBehaviour
+        MonoBehaviour,
 #endif
+        IHasInputActionReferences
     {
 #pragma warning disable CS0414
         [SerializeField] protected float m_ScrollWheelMultiplier = 0.1f;
@@ -89,16 +94,7 @@ namespace AppMana.InteractionToolkit
             }
 
             var axes = new InputAction[] { XYAxis, XYAxis, ZAxis };
-            // resolving
-            for (var i = 0; i < axes.Length; i++)
-            {
-                if (axes[i] != null && m_RemotePlayableConfiguration != null)
-                {
-                    axes[i] = m_RemotePlayableConfiguration.actions.FindAction(axes[i].id);
-                }
-                
-            }
-            
+
             for (var i = 0; i <= 2; i++)
             {
                 var axis = i;
@@ -159,5 +155,12 @@ namespace AppMana.InteractionToolkit
             return values[axis];
         }
 #endif
+        public IHasInputActionReferences.InputActionReferenceProperty[] inputActionReferenceProperties => new[]
+        {
+            new IHasInputActionReferences.InputActionReferenceProperty(() => m_EnableWhenPressed,
+                value => m_EnableWhenPressed = value),
+            new(() => XYAxis, value => XYAxis = value),
+            new(() => ZAxis, value => ZAxis = value)
+        };
     }
 }
