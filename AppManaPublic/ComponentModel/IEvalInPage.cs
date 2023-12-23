@@ -4,6 +4,10 @@ using Cysharp.Threading.Tasks;
 
 namespace AppManaPublic.Configuration
 {
+    /// <summary>
+    /// The interface to the object that will ultimately provide javascript execution within the context of the web
+    /// player.
+    /// </summary>
     public interface IEvalInPage
     {
         /// <summary>

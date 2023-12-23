@@ -26,6 +26,9 @@ namespace AppMana.ComponentModel
 
         protected const string localStorageKey = "appmanaPlayerPrefs";
 
+        /// <summary>
+        /// Disposes the instance.
+        /// </summary>
         public void Dispose()
         {
         }
@@ -43,7 +46,7 @@ return JSON.parse(data);
 "
                 , () =>
                 {
-                    var index = ((RemotePlayableConfiguration) m_EvalInPage).index;
+                    var index = ((RemotePlayableConfiguration)m_EvalInPage).index;
                     return JsonConvert.DeserializeObject<State>(
                         UnityEngine.PlayerPrefs.GetString($"{localStorageKey}{index}",
                             "null")) ?? new State();
@@ -51,6 +54,12 @@ return JSON.parse(data);
             m_State.firstLoadComplete = true;
         }
 
+        /// <summary>
+        /// Saves the player preferences.
+        /// </summary>
+        /// <para>
+        /// The Unity API requires users to explicitly save changes to player preferences.
+        /// </para>
         public async UniTask Save()
         {
             var json = JsonConvert.SerializeObject(m_State);
@@ -61,7 +70,7 @@ localStorage.setItem(""{localStorageKey}"", json);
 return true;
 ", () =>
                 {
-                    var index = ((RemotePlayableConfiguration) m_EvalInPage).index;
+                    var index = ((RemotePlayableConfiguration)m_EvalInPage).index;
                     UnityEngine.PlayerPrefs.SetString($"{localStorageKey}{index}", json);
                     UnityEngine.PlayerPrefs.Save();
                     return true;
@@ -79,27 +88,36 @@ return true;
         {
             Validate();
 
-            foreach (var dict in new[] {(IDictionary) m_State.strings, m_State.ints, m_State.floats})
+            foreach (var dict in new[] { (IDictionary)m_State.strings, m_State.ints, m_State.floats })
             {
                 dict.Clear();
             }
         }
 
+        /// <summary>
+        /// Deletes the specified preference key.
+        /// </summary>
+        /// <param name="key">the key</param>
         public void DeleteKey(string key)
         {
             Validate();
 
-            foreach (var dict in new[] {(IDictionary) m_State.strings, m_State.ints, m_State.floats})
+            foreach (var dict in new[] { (IDictionary)m_State.strings, m_State.ints, m_State.floats })
             {
                 dict.Remove(key);
             }
         }
 
+        /// <summary>
+        /// Checks if a key has been saved into the player's player preferences.
+        /// </summary>
+        /// <param name="key">the key</param>
+        /// <returns><c>true</c> if the key has been set</returns>
         public bool HasKey(string key)
         {
             Validate();
 
-            return new[] {(IDictionary) m_State.strings, m_State.ints, m_State.floats}.Any(dict =>
+            return new[] { (IDictionary)m_State.strings, m_State.ints, m_State.floats }.Any(dict =>
                 dict.Contains(key));
         }
 

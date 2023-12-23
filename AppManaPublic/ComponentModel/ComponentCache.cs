@@ -5,9 +5,9 @@ using UnityEngine;
 namespace AppMana.ComponentModel
 {
     /// <summary>
-    /// Caches values keyed by component
+    /// Internal class which caches values keyed by component
     /// </summary>
-    public class ComponentCache
+    internal class ComponentCache
     {
         private readonly ConditionalWeakTable<Component, object> m_Cache = new();
 

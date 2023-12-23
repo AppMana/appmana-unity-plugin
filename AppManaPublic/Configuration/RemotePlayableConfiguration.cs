@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using AppMana.ComponentModel;
+using AppMana.InteractionToolkit;
 using AppMana.UI.TMPro;
 using AppManaPublic.ComponentModel;
 using Cysharp.Threading.Tasks;
@@ -79,6 +80,7 @@ namespace AppManaPublic.Configuration
         /// These are used for work-in-progress support of augmented reality features.
         /// </summary>
         [SerializeField] internal Vector4 m_RotationCoefficient = new(1, -1, 1, 1);
+
         [SerializeField] internal Vector3 m_PositionCoefficient = new(1, 1, 1);
 
         /// <summary>
@@ -216,7 +218,6 @@ namespace AppManaPublic.Configuration
             // use MultiplayerInputActionReference wherever possible
 
             // Find the input modules associated with this user
-            // todo: make this configurable
             foreach (var inputSystemUIModule in GetComponentsInChildren<InputSystemUIInputModule>(true))
             {
                 // this automatically finds the corresponding actions, if they exist
@@ -226,6 +227,30 @@ namespace AppManaPublic.Configuration
             foreach (var tmpInputFieldModule in GetComponentsInChildren<InputSystemTMPInputFieldModule>(true))
             {
                 tmpInputFieldModule.actionsAsset = m_Actions;
+            }
+
+            foreach (var prop in GetComponentsInChildren<IHasInputActionReferences>(true)
+                         .SelectMany(refs => refs.inputActionReferenceProperties))
+            {
+                var inputActionReference = prop.get();
+                if (inputActionReference == null)
+                {
+                    continue;
+                }
+                
+                var newInputActionReference = m_Actions.FindReference(inputActionReference.action.name);
+                if (!newInputActionReference)
+                {
+                    Debug.LogError(
+                        $"Could not find action {inputActionReference.action.name} in the {nameof(actions)} asset on this" +
+                        $" {nameof(RemotePlayableConfiguration)}. Make sure all your referenced actions are in the " +
+                        $"actions asset referenced in this object. Or, use {nameof(MultiplayerInputActionReference)}.",
+                        this);
+                }
+                else
+                {
+                    inputActionReference.Set(inputActionReference);
+                }
             }
 
             m_Actions.Enable();

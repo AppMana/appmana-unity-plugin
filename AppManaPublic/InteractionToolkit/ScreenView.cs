@@ -13,6 +13,35 @@ using UnityEngine.UI;
 
 namespace AppMana.InteractionToolkit
 {
+    /// <summary>
+    /// The ScreenView component simplifies the management of screen transitions within a Unity UGUI canvas.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// It automates transitions and screen activation for UI elements, making it easier to create interactive interfaces.
+    /// </para>
+    /// <para>
+    /// Key Features:
+    /// - Automatic Screen Activation: In edit mode, selecting a <c>MaterialScreen</c> child automatically activates it in the hierarchy.
+    /// - Transition Management: Provides various transition effects (fade, scale, slide, ripple) for smooth screen transitions.
+    /// - Reactive Property Support: Utilizes UniRx for reactive screen tracking.
+    /// </para>
+    /// <para>
+    /// Usage:
+    /// 1. Attach ScreenView to a GameObject in the Unity UGUI canvas.
+    /// 2. Ensure each child has a MaterialScreen component for representing distinct screens.
+    /// 3. Configure transitions in the inspector.
+    /// 4. Use the Transition method to programmatically switch between screens.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// To transition the screen view, call <see cref="Transition(int)"/> with the screen or its index.
+    /// <code>
+    /// screenView.Transition(1);
+    /// </code>
+    /// </example>
+    ///
+    /// <seealso cref="MaterialScreen"/>
 #if UNITY_EDITOR
     [InitializeOnLoad]
 #endif
@@ -20,6 +49,9 @@ namespace AppMana.InteractionToolkit
     [AddComponentMenu("UI/Screen View", 100)]
     public class ScreenView : UIBehaviour
     {
+        /// <summary>
+        /// Enumerates the possible directions for slide transitions.
+        /// </summary>
         public enum SlideDirection
         {
             Left,
@@ -27,14 +59,18 @@ namespace AppMana.InteractionToolkit
             Up,
             Down
         }
-
+        /// <summary>
+        /// Enumerates the types of ripple effects for transitions.
+        /// </summary>
         public enum RippleType
         {
             MousePosition,
             Manual,
             Center,
         }
-
+        /// <summary>
+        /// Enumerates the types of transitions - In, Out, or both In and Out.
+        /// </summary>
         public enum Type
         {
             In,
@@ -43,13 +79,12 @@ namespace AppMana.InteractionToolkit
         }
 
 #if UNITY_EDITOR
-        [SerializeField]
-        private bool m_AutoTrackScreens = true;
+        [SerializeField] private bool m_AutoTrackScreens = true;
 
-        [SerializeField]
-        private bool m_OnlyShowSelectedScreen = true;
+        [SerializeField] private bool m_OnlyShowSelectedScreen = true;
 
         private bool m_ScreensDirty = true;
+
         public bool screensDirty
         {
             set { m_ScreensDirty = value; }
@@ -58,16 +93,16 @@ namespace AppMana.InteractionToolkit
         private GameObject m_OldSelectionObjects;
 #endif
 
-        [SerializeField]
-        private MaterialScreen[] m_MaterialScreens = new MaterialScreen[0];
+        [SerializeField] private MaterialScreen[] m_MaterialScreens = new MaterialScreen[0];
+
         public MaterialScreen[] materialScreen
         {
             get { return m_MaterialScreens; }
             set { m_MaterialScreens = value; }
         }
 
-        [SerializeField]
-        private IntReactiveProperty m_CurrentScreen = new IntReactiveProperty();
+        [SerializeField] private IntReactiveProperty m_CurrentScreen = new IntReactiveProperty();
+
         public int currentScreen
         {
             get { return m_CurrentScreen.Value; }
@@ -77,30 +112,31 @@ namespace AppMana.InteractionToolkit
         public IReadOnlyReactiveProperty<int> currentScreenReactive => m_CurrentScreen;
 
         private int m_LastScreen;
+
         public int lastScreen
         {
             get { return m_LastScreen; }
         }
 
         //  Transition In
-        [SerializeField]
-        private bool m_FadeIn = true;
+        [SerializeField] private bool m_FadeIn = true;
+
         public bool fadeIn
         {
             get { return m_FadeIn; }
             set { m_FadeIn = value; }
         }
 
-        [SerializeField]
-        private Tween.TweenType m_FadeInTweenType = Tween.TweenType.EaseOutQuint;
+        [SerializeField] private Tween.TweenType m_FadeInTweenType = Tween.TweenType.EaseOutQuint;
+
         public Tween.TweenType fadeInTweenType
         {
             get { return m_FadeInTweenType; }
             set { m_FadeInTweenType = value; }
         }
 
-        [SerializeField]
-        private float m_FadeInAlpha;
+        [SerializeField] private float m_FadeInAlpha;
+
         public float fadeInAlpha
         {
             get { return m_FadeInAlpha; }
@@ -108,91 +144,93 @@ namespace AppMana.InteractionToolkit
         }
 
         private AnimationCurve m_FadeInCustomCurve;
+
         public AnimationCurve fadeInCustomCurve
         {
             get { return m_FadeInCustomCurve; }
             set { m_FadeInCustomCurve = value; }
         }
 
-        [SerializeField]
-        private bool m_ScaleIn;
+        [SerializeField] private bool m_ScaleIn;
+
         public bool scaleIn
         {
             get { return m_ScaleIn; }
             set { m_ScaleIn = value; }
         }
 
-        [SerializeField]
-        private Tween.TweenType m_ScaleInTweenType = Tween.TweenType.EaseOutQuint;
+        [SerializeField] private Tween.TweenType m_ScaleInTweenType = Tween.TweenType.EaseOutQuint;
+
         public Tween.TweenType scaleInTweenType
         {
             get { return m_ScaleInTweenType; }
             set { m_ScaleInTweenType = value; }
         }
 
-        [SerializeField]
-        private float m_ScaleInScale;
+        [SerializeField] private float m_ScaleInScale;
+
         public float scaleInScale
         {
             get { return m_ScaleInScale; }
             set { m_ScaleInScale = value; }
         }
-        
+
         private AnimationCurve m_ScaleInCustomCurve;
+
         public AnimationCurve scaleInCustomCurve
         {
             get { return m_ScaleInCustomCurve; }
             set { m_ScaleInCustomCurve = value; }
         }
 
-        [SerializeField]
-        private bool m_SlideIn;
+        [SerializeField] private bool m_SlideIn;
+
         public bool slideIn
         {
             get { return m_SlideIn; }
             set { m_SlideIn = value; }
         }
 
-        [SerializeField]
-        private Tween.TweenType m_SlideInTweenType = Tween.TweenType.EaseOutQuint;
+        [SerializeField] private Tween.TweenType m_SlideInTweenType = Tween.TweenType.EaseOutQuint;
+
         public Tween.TweenType slideInTweenType
         {
             get { return m_SlideInTweenType; }
             set { m_SlideInTweenType = value; }
         }
 
-        [SerializeField]
-        private SlideDirection m_SlideInDirection = SlideDirection.Right;
+        [SerializeField] private SlideDirection m_SlideInDirection = SlideDirection.Right;
+
         public SlideDirection slideInDirection
         {
             get { return m_SlideInDirection; }
             set { m_SlideInDirection = value; }
         }
 
-        [SerializeField]
-        private bool m_AutoSlideInAmount = true;
+        [SerializeField] private bool m_AutoSlideInAmount = true;
+
         public bool autoSlideInAmount
         {
             get { return m_AutoSlideInAmount; }
             set { m_AutoSlideInAmount = value; }
         }
 
-        [SerializeField]
-        private float m_SlideInAmount;
+        [SerializeField] private float m_SlideInAmount;
+
         public float slideInAmount
         {
             get { return m_SlideInAmount; }
             set { m_SlideInAmount = value; }
         }
 
-        [SerializeField]
-        private float m_SlideInPercent = 100f;
+        [SerializeField] private float m_SlideInPercent = 100f;
+
         public float slideInPercent
         {
             get { return m_SlideInPercent; }
             set { m_SlideInPercent = value; }
         }
-        
+
         private AnimationCurve m_SlideInCustomCurve;
 
         public AnimationCurve slideInCustomCurve
@@ -201,39 +239,40 @@ namespace AppMana.InteractionToolkit
             set { m_SlideInCustomCurve = value; }
         }
 
-        [SerializeField]
-        private bool m_RippleIn;
+        [SerializeField] private bool m_RippleIn;
+
         public bool rippleIn
         {
             get { return m_RippleIn; }
             set { m_RippleIn = value; }
         }
 
-        [SerializeField]
-        private Tween.TweenType m_RippleInTweenType = Tween.TweenType.EaseOutQuint;
+        [SerializeField] private Tween.TweenType m_RippleInTweenType = Tween.TweenType.EaseOutQuint;
+
         public Tween.TweenType rippleInTweenType
         {
             get { return m_RippleInTweenType; }
             set { m_RippleInTweenType = value; }
         }
 
-        [SerializeField]
-        private RippleType m_RippleInType;
+        [SerializeField] private RippleType m_RippleInType;
+
         public RippleType rippleInType
         {
             get { return m_RippleInType; }
             set { m_RippleInType = value; }
         }
 
-        [SerializeField]
-        private Vector2 m_RippleInPosition;
+        [SerializeField] private Vector2 m_RippleInPosition;
+
         public Vector2 rippleInPosition
         {
             get { return m_RippleInPosition; }
             set { m_RippleInPosition = value; }
         }
-        
+
         private AnimationCurve m_RippleInCustomCurve;
+
         public AnimationCurve rippleInCustomCurve
         {
             get { return m_RippleInCustomCurve; }
@@ -241,172 +280,176 @@ namespace AppMana.InteractionToolkit
         }
 
         //  Transition Out
-        [SerializeField]
-        private bool m_FadeOut;
+        [SerializeField] private bool m_FadeOut;
+
         public bool fadeOut
         {
             get { return m_FadeOut; }
             set { m_FadeOut = value; }
         }
 
-        [SerializeField]
-        private Tween.TweenType m_FadeOutTweenType = Tween.TweenType.EaseOutQuint;
+        [SerializeField] private Tween.TweenType m_FadeOutTweenType = Tween.TweenType.EaseOutQuint;
+
         public Tween.TweenType fadeOutTweenType
         {
             get { return m_FadeOutTweenType; }
             set { m_FadeOutTweenType = value; }
         }
 
-        [SerializeField]
-        private float m_FadeOutAlpha;
+        [SerializeField] private float m_FadeOutAlpha;
+
         public float fadeOutAlpha
         {
             get { return m_FadeOutAlpha; }
             set { m_FadeOutAlpha = value; }
         }
-        
+
         private AnimationCurve m_FadeOutCustomCurve;
+
         public AnimationCurve fadeOutCustomCurve
         {
             get { return m_FadeOutCustomCurve; }
             set { m_FadeOutCustomCurve = value; }
         }
 
-        [SerializeField]
-        private bool m_ScaleOut;
+        [SerializeField] private bool m_ScaleOut;
+
         public bool scaleOut
         {
             get { return m_ScaleOut; }
             set { m_ScaleOut = value; }
         }
 
-        [SerializeField]
-        private Tween.TweenType m_ScaleOutTweenType = Tween.TweenType.EaseOutQuint;
+        [SerializeField] private Tween.TweenType m_ScaleOutTweenType = Tween.TweenType.EaseOutQuint;
+
         public Tween.TweenType scaleOutTweenType
         {
             get { return m_ScaleOutTweenType; }
             set { m_ScaleOutTweenType = value; }
         }
 
-        [SerializeField]
-        private float m_ScaleOutScale;
+        [SerializeField] private float m_ScaleOutScale;
+
         public float scaleOutScale
         {
             get { return m_ScaleOutScale; }
             set { m_ScaleOutScale = value; }
         }
-        
+
         private AnimationCurve m_ScaleOutCustomCurve;
+
         public AnimationCurve scaleOutCustomCurve
         {
             get { return m_ScaleOutCustomCurve; }
             set { m_ScaleOutCustomCurve = value; }
         }
 
-        [SerializeField]
-        private bool m_SlideOut;
+        [SerializeField] private bool m_SlideOut;
+
         public bool slideOut
         {
             get { return m_SlideOut; }
             set { m_SlideOut = value; }
         }
 
-        [SerializeField]
-        private Tween.TweenType m_SlideOutTweenType = Tween.TweenType.EaseOutQuint;
+        [SerializeField] private Tween.TweenType m_SlideOutTweenType = Tween.TweenType.EaseOutQuint;
+
         public Tween.TweenType slideOutTweenType
         {
             get { return m_SlideOutTweenType; }
             set { m_SlideOutTweenType = value; }
         }
 
-        [SerializeField]
-        private SlideDirection m_SlideOutDirection = SlideDirection.Left;
+        [SerializeField] private SlideDirection m_SlideOutDirection = SlideDirection.Left;
+
         public SlideDirection slideOutDirection
         {
             get { return m_SlideOutDirection; }
             set { m_SlideOutDirection = value; }
         }
 
-        [SerializeField]
-        private bool m_AutoSlideOutAmount = true;
+        [SerializeField] private bool m_AutoSlideOutAmount = true;
+
         public bool autoSlideOutAmount
         {
             get { return m_AutoSlideOutAmount; }
             set { m_AutoSlideOutAmount = value; }
         }
 
-        [SerializeField]
-        private float m_SlideOutAmount;
+        [SerializeField] private float m_SlideOutAmount;
+
         public float slideOutAmount
         {
             get { return m_SlideOutAmount; }
             set { m_SlideOutAmount = value; }
         }
 
-        [SerializeField]
-        private float m_SlideOutPercent = 100f;
+        [SerializeField] private float m_SlideOutPercent = 100f;
+
         public float slideOutPercent
         {
             get { return m_SlideOutPercent; }
             set { m_SlideOutPercent = value; }
         }
-        
+
         private AnimationCurve m_SlideOutCustomCurve;
+
         public AnimationCurve slideOutCustomCurve
         {
             get { return m_SlideOutCustomCurve; }
             set { m_SlideOutCustomCurve = value; }
         }
-        
-        [SerializeField]
-        private bool m_RippleOut;
+
+        [SerializeField] private bool m_RippleOut;
+
         public bool rippleOut
         {
             get { return m_RippleOut; }
             set { m_RippleOut = value; }
         }
 
-        [SerializeField]
-        private Tween.TweenType m_RippleOutTweenType = Tween.TweenType.EaseOutQuint;
+        [SerializeField] private Tween.TweenType m_RippleOutTweenType = Tween.TweenType.EaseOutQuint;
+
         public Tween.TweenType rippleOutTweenType
         {
             get { return m_RippleOutTweenType; }
             set { m_RippleOutTweenType = value; }
         }
 
-        [SerializeField]
-        private RippleType m_RippleOutType;
+        [SerializeField] private RippleType m_RippleOutType;
+
         public RippleType rippleOutType
         {
             get { return m_RippleOutType; }
             set { m_RippleOutType = value; }
         }
 
-        [SerializeField]
-        private Vector2 m_RippleOutPosition;
+        [SerializeField] private Vector2 m_RippleOutPosition;
+
         public Vector2 rippleOutPosition
         {
             get { return m_RippleOutPosition; }
             set { m_RippleOutPosition = value; }
         }
-        
+
         private AnimationCurve m_RippleOutCustomCurve;
+
         public AnimationCurve rippleOutCustomCurve
         {
             get { return m_RippleOutCustomCurve; }
             set { m_RippleOutCustomCurve = value; }
         }
 
-        [SerializeField]
-        private float m_TransitionDuration = 0.5f;
+        [SerializeField] private float m_TransitionDuration = 0.5f;
+
         public float transitionDuration
         {
             get { return m_TransitionDuration; }
             set { m_TransitionDuration = value; }
         }
 
-        [SerializeField]
-        private Type m_TransitionType = Type.In;
+        [SerializeField] private Type m_TransitionType = Type.In;
+
         public Type transitionType
         {
             get { return m_TransitionType; }
@@ -414,6 +457,7 @@ namespace AppMana.InteractionToolkit
         }
 
         private Canvas m_Canvas;
+
         public Canvas canvas
         {
             get { return m_Canvas; }
@@ -421,6 +465,7 @@ namespace AppMana.InteractionToolkit
         }
 
         private GraphicRaycaster m_GraphicRaycaster;
+
         public GraphicRaycaster graphicRaycaster
         {
             get { return m_GraphicRaycaster; }
@@ -428,18 +473,20 @@ namespace AppMana.InteractionToolkit
         }
 
         [Serializable]
-        public class OnScreenTransitionUnityEvent : UnityEvent<int> { }
+        public class OnScreenTransitionUnityEvent : UnityEvent<int>
+        {
+        }
 
-        [SerializeField]
-        private OnScreenTransitionUnityEvent m_OnScreenEndTransition;
+        [SerializeField] private OnScreenTransitionUnityEvent m_OnScreenEndTransition;
+
         public OnScreenTransitionUnityEvent onScreenEndTransition
         {
             get { return m_OnScreenEndTransition; }
             set { m_OnScreenEndTransition = value; }
         }
 
-        [SerializeField]
-        private OnScreenTransitionUnityEvent m_OnScreenBeginTransition;
+        [SerializeField] private OnScreenTransitionUnityEvent m_OnScreenBeginTransition;
+
         public OnScreenTransitionUnityEvent onScreenBeginTransition
         {
             get { return m_OnScreenBeginTransition; }
@@ -537,6 +584,7 @@ namespace AppMana.InteractionToolkit
                                 objectSelected = true;
                             }
                         }
+
                         if (!objectSelected)
                         {
                             materialScreen[i].gameObject.SetActive(false);
@@ -549,6 +597,7 @@ namespace AppMana.InteractionToolkit
                     }
                 }
             }
+
             if (currentScreen < 0)
             {
                 currentScreen = 0;
@@ -601,6 +650,7 @@ namespace AppMana.InteractionToolkit
         {
             Transition(materialScreen.screenIndex);
         }
+
         public void Transition(int screenIndex, Type transitionType)
         {
             if (0 > screenIndex || screenIndex >= materialScreen.Length || screenIndex == currentScreen) return;
@@ -690,6 +740,7 @@ namespace AppMana.InteractionToolkit
                 {
                     Destroy(m_GraphicRaycaster);
                 }
+
                 if (m_Canvas != null)
                 {
                     Destroy(m_Canvas);

@@ -113,7 +113,7 @@ namespace AppMana.UI.TMPro
             {
                 throw new UnityException($"unexpectedly called {nameof(OnEnabledField)}");
             }
-            
+
             var state = new InputSystemFieldState();
             m_States.AddOrUpdate(tmpInputSystemInputField, state);
             var compositeDisposable = state.disposable;
@@ -179,6 +179,7 @@ namespace AppMana.UI.TMPro
                 {
                     return;
                 }
+
                 state.eventQueue.Enqueue(new Event()
                 {
                     button = 0,
@@ -205,7 +206,7 @@ namespace AppMana.UI.TMPro
                             {
                                 break;
                             }
-                            
+
                             var disposable = new CompositeDisposable();
                             keyboardSubs[keyboard] = disposable;
                             keyboard.OnTextInputAsObservable()
@@ -271,34 +272,21 @@ namespace AppMana.UI.TMPro
 
         private void AssignBasedOnNames()
         {
-            m_Backspace = FindReference(nameof(m_Backspace));
-            m_Copy = FindReference(nameof(m_Copy));
-            m_Cut = FindReference(nameof(m_Cut));
-            m_Deselect = FindReference(nameof(m_Deselect));
-            m_Paste = FindReference(nameof(m_Paste));
-            m_SelectAll = FindReference(nameof(m_SelectAll));
-            m_DeleteKey = FindReference(nameof(m_DeleteKey));
-            m_MoveDown = FindReference(nameof(m_MoveDown));
-            m_MoveLeft = FindReference(nameof(m_MoveLeft));
-            m_MoveRight = FindReference(nameof(m_MoveRight));
-            m_MoveUp = FindReference(nameof(m_MoveUp));
-            m_MovePageDown = FindReference(nameof(m_MovePageDown));
-            m_MovePageUp = FindReference(nameof(m_MovePageUp));
-            m_MoveToEndOfLine = FindReference(nameof(m_MoveToEndOfLine));
-            m_MoveToStartOfLine = FindReference(nameof(m_MoveToStartOfLine));
-        }
-
-        private InputActionReference FindReference(string name)
-        {
-            if (name.StartsWith("m_"))
-            {
-                name = name.Substring("m_".Length);
-            }
-
-            return InputActionReference.Create(m_ActionsAsset.actionMaps
-                .SelectMany(map => map.actions)
-                .FirstOrDefault(action =>
-                    string.Equals(action.name, name, StringComparison.InvariantCultureIgnoreCase)));
+            m_Backspace = m_ActionsAsset.FindReference(nameof(m_Backspace));
+            m_Copy = m_ActionsAsset.FindReference(nameof(m_Copy));
+            m_Cut = m_ActionsAsset.FindReference(nameof(m_Cut));
+            m_Deselect = m_ActionsAsset.FindReference(nameof(m_Deselect));
+            m_Paste = m_ActionsAsset.FindReference(nameof(m_Paste));
+            m_SelectAll = m_ActionsAsset.FindReference(nameof(m_SelectAll));
+            m_DeleteKey = m_ActionsAsset.FindReference(nameof(m_DeleteKey));
+            m_MoveDown = m_ActionsAsset.FindReference(nameof(m_MoveDown));
+            m_MoveLeft = m_ActionsAsset.FindReference(nameof(m_MoveLeft));
+            m_MoveRight = m_ActionsAsset.FindReference(nameof(m_MoveRight));
+            m_MoveUp = m_ActionsAsset.FindReference(nameof(m_MoveUp));
+            m_MovePageDown = m_ActionsAsset.FindReference(nameof(m_MovePageDown));
+            m_MovePageUp = m_ActionsAsset.FindReference(nameof(m_MovePageUp));
+            m_MoveToEndOfLine = m_ActionsAsset.FindReference(nameof(m_MoveToEndOfLine));
+            m_MoveToStartOfLine = m_ActionsAsset.FindReference(nameof(m_MoveToStartOfLine));
         }
 
         private void SetDefaultActionsAsset()
