@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using AppMana.ComponentModel;
+using AppMana.InteractionToolkit;
 using AppManaPublic.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -31,6 +32,7 @@ namespace AppManaPublic.Editor
         private SerializedProperty m_EnablePlayerPrefs;
         private SerializedProperty m_EnableUrlParameters;
         private SerializedProperty m_EnableAugmentedReality;
+        private SerializedProperty m_EnableAllInputActions;
         private SerializedProperty m_OfflineUrlParameters;
         private SerializedProperty m_RotationCoefficient;
         private SerializedProperty m_PositionCoefficient;
@@ -259,6 +261,7 @@ namespace AppManaPublic.Editor
                         tooltip =
                             $"Loads the URL parameters from the visitor's browser. Access the player's URL parameters using {nameof(RemotePlayableConfiguration)}.{nameof(RemotePlayableConfiguration.urlParameters)}."
                     });
+
                 if (m_EnableUrlParameters.boolValue)
                 {
                     EditorGUILayout.PropertyField(m_OfflineUrlParameters,
@@ -270,6 +273,37 @@ namespace AppManaPublic.Editor
                         });
                 }
 
+                EditorGUI.BeginDisabledGroup(remotePlayableConfigurations.Length > 1);
+                EditorGUILayout.PropertyField(m_EnableAllInputActions,
+                    new GUIContent
+                    {
+                        text = "Enable All Input Action References",
+                        tooltip =
+                            $"Ensures that all actions associated with input action references in your scene are enabled when your game starts, wherever they are."
+                    });
+                EditorGUI.EndDisabledGroup();
+                if (remotePlayableConfigurations.Length > 1)
+                {
+                    var inputActionReferencesInScene = UnityUtilities.FindObjectsByType<InputActionReference>();
+                    if (inputActionReferencesInScene.Length > 0)
+                    {
+                        EditorGUILayout.HelpBox(
+                            $"You have ordinary {nameof(InputActionReference)} objects in your scene, but you are making a multiplayer game. Use {nameof(MultiplayerInputActionReference)}, and add the actions to the {nameof(InputActionAsset)} associated with this component ({m_Actions.serializedObject?.targetObject?.name ?? "none set"}) instead to ensure each user's devices are correctly associated with their corresponding actions.",
+                            MessageType.Error);
+                        foreach (var inputActionReference in inputActionReferencesInScene)
+                        {
+                            var content = new GUIContent(inputActionReference.name);
+                            var rect = GUILayoutUtility.GetRect(content, EditorStyles.linkLabel);
+
+                            if (GUI.Button(rect, content, EditorStyles.linkLabel))
+                            {
+                                Selection.activeObject = inputActionReference;
+                            }
+                        }
+                    }
+                }
+
+
                 if (m_EnablePlayerPrefs.boolValue || m_EnableUrlParameters.boolValue)
                 {
                     EditorGUILayout.HelpBox(new GUIContent
@@ -278,6 +312,16 @@ namespace AppManaPublic.Editor
                             $"{nameof(RemotePlayableConfiguration.playerPrefs)} and {nameof(RemotePlayableConfiguration.urlParameters)} can only be accessed after a player has been connected. You are notified of a connection in {nameof(RemotePlayableConfiguration)}.{nameof(RemotePlayableConfiguration.onPlayerConnected)}, either by dragging and dropping a method into the event slot in the editor or by calling {nameof(RemotePlayableConfiguration)}.{nameof(RemotePlayableConfiguration.onPlayerConnected)}.{nameof(UnityEvent.AddListener)}."
                     });
                 }
+
+                if (m_EnablePlayerPrefs.boolValue || m_EnableUrlParameters.boolValue)
+                {
+                    EditorGUILayout.HelpBox(new GUIContent
+                    {
+                        text =
+                            $"{nameof(RemotePlayableConfiguration.playerPrefs)} and {nameof(RemotePlayableConfiguration.urlParameters)} can only be accessed after a player has been connected. You are notified of a connection in {nameof(RemotePlayableConfiguration)}.{nameof(RemotePlayableConfiguration.onPlayerConnected)}, either by dragging and dropping a method into the event slot in the editor or by calling {nameof(RemotePlayableConfiguration)}.{nameof(RemotePlayableConfiguration.onPlayerConnected)}.{nameof(UnityEvent.AddListener)}."
+                    });
+                }
+
 
                 if (m_HasPrivatePlugin)
                 {

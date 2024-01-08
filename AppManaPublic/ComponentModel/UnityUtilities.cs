@@ -3,7 +3,10 @@ using UnityEngine;
 
 namespace AppMana.ComponentModel
 {
-    public static class UnityUtilities
+    /// <summary>
+    /// An internal class used to support multiple versions of Unity.
+    /// </summary>
+    internal static class UnityUtilities
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T FindFirstObjectByType<T>() where T : UnityEngine.Object
@@ -26,7 +29,7 @@ namespace AppMana.ComponentModel
             return UnityEngine.Object.FindObjectsOfType<T>(includeInactive);
 #endif
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T FindAnyObjectByType<T>() where T : UnityEngine.Object
         {

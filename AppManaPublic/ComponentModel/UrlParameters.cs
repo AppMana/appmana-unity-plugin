@@ -10,8 +10,8 @@ namespace AppManaPublic.ComponentModel
     /// <summary>
     /// The URL parameters for the visitor.
     /// </summary>
-    /// <para>This will be expanded with more information about the user navigator.</para>
-    /// <para>Set the default parameters when editing offline using the RemotePlayableConfiguration component.</para>
+    /// <para>Set the default parameters when editing offline using the
+    /// <see cref="RemotePlayableConfiguration.urlParameters"/> field in the inspector.</para>
     /// <see cref="As{T}"/>
     public class UrlParameters
     {

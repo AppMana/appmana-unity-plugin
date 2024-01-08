@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace AppManaPublic.ComponentModel
 {
+    /// <summary>
+    /// String tuples used to model URL parameters.
+    /// </summary>
     [Serializable]
     public struct StringTuple
     {
@@ -15,8 +18,14 @@ namespace AppManaPublic.ComponentModel
             m_Value = value;
         }
 
+        /// <summary>
+        /// The key
+        /// </summary>
         public string key => m_Key;
 
+        /// <summary>
+        /// The value
+        /// </summary>
         public string value => m_Value;
     }
 }

@@ -3,6 +3,9 @@ using AppMana.ComponentModel;
 using AppMana.UI.TMPro;
 using TMPro;
 using UnityEngine;
+#if UNITY_INPUTSYSTEM
+using UnityEngine.InputSystem;
+#endif
 using UnityEngine.UI;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -88,7 +91,8 @@ namespace AppManaPublic.Configuration
                     $"{validationPrefix}AppMana does not support multiple, active cameras that (1) are not associated with " +
                     $"a {nameof(RemotePlayableConfiguration)} and (2) are not rendering to a {nameof(RenderTexture)}. " +
                     $"You must use the SRP-appropriate approach for camera stacking instead, such as " +
-                    $"compositing or render layers.", cameras[0]);
+                    $"compositing or render layers; or, if the camera is being used for an effect, add a {nameof(RenderNonStreamingCamera)} to it.",
+                    cameras[0]);
             }
 
             foreach (var remotePlayableConfiguration in remotePlayableConfigurations)
@@ -162,6 +166,17 @@ namespace AppManaPublic.Configuration
                     canvas);
             }
 
+            // check for input action references that will need to be associated with the actual input action map
+#if UNITY_INPUTSYSTEM
+            var inputActionReferences = UnityUtilities.FindObjectsByType<InputActionReference>();
+            if (inputActionReferences.Length > 0)
+            {
+                Debug.LogWarning(
+                    $"AppMana found {nameof(InputActionReference)} objects in your scene. Use " +
+                    $"{nameof(IHasInputActionReferences)} to allow {nameof(RemotePlayableConfiguration)} to discover " +
+                    $"those references and correctly associate them with remote users' remote input devices.");
+            }
+#endif
             if (remotePlayableConfigurations.Length == 0)
             {
                 PluginBase.EnsurePlugins();

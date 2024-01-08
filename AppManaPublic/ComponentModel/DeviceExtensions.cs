@@ -6,7 +6,6 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
-using UnityEngine.InputSystem.UI;
 using UnityEngine.InputSystem.Users;
 
 namespace AppMana.ComponentModel
@@ -157,8 +156,9 @@ namespace AppMana.ComponentModel
                 });
         }
 
+
         /// <summary>
-        /// Creates an input action reference for the action with the specified name
+        /// Finds an input action reference for the action with the specified name
         /// </summary>
         /// <param name="actionsAsset"></param>
         /// <param name="name"></param>

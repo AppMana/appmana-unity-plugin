@@ -113,7 +113,7 @@ namespace AppMana.UI.TMPro
             {
                 throw new UnityException($"unexpectedly called {nameof(OnEnabledField)}");
             }
-            
+
             var state = new InputSystemFieldState();
             m_States.AddOrUpdate(tmpInputSystemInputField, state);
             var compositeDisposable = state.disposable;
@@ -179,6 +179,7 @@ namespace AppMana.UI.TMPro
                 {
                     return;
                 }
+
                 state.eventQueue.Enqueue(new Event()
                 {
                     button = 0,
@@ -205,7 +206,7 @@ namespace AppMana.UI.TMPro
                             {
                                 break;
                             }
-                            
+
                             var disposable = new CompositeDisposable();
                             keyboardSubs[keyboard] = disposable;
                             keyboard.OnTextInputAsObservable()
@@ -271,21 +272,21 @@ namespace AppMana.UI.TMPro
 
         private void AssignBasedOnNames()
         {
-            m_Backspace = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_Backspace));
-            m_Copy = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_Copy));
-            m_Cut = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_Cut));
-            m_Deselect = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_Deselect));
-            m_Paste = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_Paste));
-            m_SelectAll = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_SelectAll));
-            m_DeleteKey = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_DeleteKey));
-            m_MoveDown = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_MoveDown));
-            m_MoveLeft = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_MoveLeft));
-            m_MoveRight = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_MoveRight));
-            m_MoveUp = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_MoveUp));
-            m_MovePageDown = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_MovePageDown));
-            m_MovePageUp = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_MovePageUp));
-            m_MoveToEndOfLine = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_MoveToEndOfLine));
-            m_MoveToStartOfLine = DeviceExtensions.FindReference(m_ActionsAsset, nameof(m_MoveToStartOfLine));
+            m_Backspace = m_ActionsAsset.FindReference(nameof(m_Backspace));
+            m_Copy = m_ActionsAsset.FindReference(nameof(m_Copy));
+            m_Cut = m_ActionsAsset.FindReference(nameof(m_Cut));
+            m_Deselect = m_ActionsAsset.FindReference(nameof(m_Deselect));
+            m_Paste = m_ActionsAsset.FindReference(nameof(m_Paste));
+            m_SelectAll = m_ActionsAsset.FindReference(nameof(m_SelectAll));
+            m_DeleteKey = m_ActionsAsset.FindReference(nameof(m_DeleteKey));
+            m_MoveDown = m_ActionsAsset.FindReference(nameof(m_MoveDown));
+            m_MoveLeft = m_ActionsAsset.FindReference(nameof(m_MoveLeft));
+            m_MoveRight = m_ActionsAsset.FindReference(nameof(m_MoveRight));
+            m_MoveUp = m_ActionsAsset.FindReference(nameof(m_MoveUp));
+            m_MovePageDown = m_ActionsAsset.FindReference(nameof(m_MovePageDown));
+            m_MovePageUp = m_ActionsAsset.FindReference(nameof(m_MovePageUp));
+            m_MoveToEndOfLine = m_ActionsAsset.FindReference(nameof(m_MoveToEndOfLine));
+            m_MoveToStartOfLine = m_ActionsAsset.FindReference(nameof(m_MoveToStartOfLine));
         }
 
         private void SetDefaultActionsAsset()

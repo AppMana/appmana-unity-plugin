@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using AppMana.ComponentModel;
+using AppMana.InteractionToolkit;
 using AppMana.UI.TMPro;
 using AppManaPublic.ComponentModel;
 using Cysharp.Threading.Tasks;
@@ -82,6 +83,11 @@ namespace AppManaPublic.Configuration
         [SerializeField] internal Vector4 m_RotationCoefficient = new(1, -1, 1, 1);
 
         [SerializeField] internal Vector3 m_PositionCoefficient = new(1, 1, 1);
+
+        /// <summary>
+        /// When true, enables all input actions from input action references in this scene, ensuring they are actually executed even if they are not referenced in the proper actions map.
+        /// </summary>
+        [SerializeField] internal bool m_EnableAllInputActions = true;
 
         /// <summary>
         /// Set the URL parameters when this project is offline, for example when running in the editor.
@@ -218,7 +224,6 @@ namespace AppManaPublic.Configuration
             // use MultiplayerInputActionReference wherever possible
 
             // Find the input modules associated with this user
-            // todo: make this configurable
             foreach (var inputSystemUIModule in GetComponentsInChildren<InputSystemUIInputModule>(true))
             {
                 // this automatically finds the corresponding actions, if they exist
@@ -231,6 +236,7 @@ namespace AppManaPublic.Configuration
             }
 
 #if UNITY_INPUTSYSTEM
+            // todo: does this require extra includes?
             foreach (var trackedPoseDriver in GetComponentsInChildren<TrackedPoseDriver>(true))
             {
                 if (trackedPoseDriver.positionInput.reference != null)
@@ -249,10 +255,57 @@ namespace AppManaPublic.Configuration
             }
 #endif
 
-            var findObjectsByType = UnityUtilities.FindObjectsByType<InputActionReference>();
-            Debug.Log(findObjectsByType);
+            foreach (var prop in GetComponentsInChildren<IHasInputActionReferences>(true)
+                         .SelectMany(refs => refs.inputActionReferenceProperties))
+            {
+                var inputActionReference = prop.get();
+                if (inputActionReference == null)
+                {
+                    continue;
+                }
+
+                var newInputActionReference = m_Actions.FindReference(inputActionReference.action.name);
+                if (!newInputActionReference)
+                {
+                    Debug.LogError(
+                        $"Could not find action {inputActionReference.action.name} in the {nameof(actions)} asset on this" +
+                        $" {nameof(RemotePlayableConfiguration)}. Make sure all your referenced actions are in the " +
+                        $"actions asset referenced in this object. Or, use {nameof(MultiplayerInputActionReference)}.",
+                        this);
+                }
+                else
+                {
+                    inputActionReference.Set(inputActionReference);
+                }
+            }
 
             m_Actions.Enable();
+
+            if (m_EnableAllInputActions)
+            {
+                var inputActions = UnityUtilities.FindObjectsByType<InputActionReference>();
+                foreach (var inputAction in inputActions)
+                {
+                    if (inputAction.action == null || inputAction.action.enabled)
+                    {
+                        continue;
+                    }
+
+                    if (count > 1)
+                    {
+                        Debug.LogError(
+                            $"You are trying to engineer a multiplayer game, but have not associated an input action reference {inputAction.name} with the actions map on this {nameof(RemotePlayableConfiguration)} on {gameObject.name}. You must use the actions asset associated with this component; use a {nameof(MultiplayerInputActionReference)}; or implement {nameof(IHasInputActionReferences)} on a script that can manage the input action references for a specific player.");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"The input action {inputAction.name} was not enabled when trying to" +
+                                         $" enable all actions associated with this {nameof(RemotePlayableConfiguration)} on {gameObject.name}. " +
+                                         $" It is being enabled out of an abundance of caution. To disable around this" +
+                                         $" behavior, uncheck Enable All Input Actions.", inputAction);
+                        inputAction.action.Enable();
+                    }
+                }
+            }
         }
 
         internal void PerformPairingWithDevice(InputDevice device)
