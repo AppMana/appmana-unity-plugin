@@ -25,7 +25,7 @@ namespace AppMana.XR
                 AppManaPlaneSubsystem.subsystemId);
             CreateSubsystem<XRCameraSubsystemDescriptor, XRCameraSubsystem>(s_CameraSubsystemDescriptors,
                 AppManaCameraSubsystem.subsystemId);
-            CreateSubsystem<XRInputSubsystemDescriptor, XRInputSubsystem>(s_InputSubsystemDescriptors, AppManaInputSubsystem.subsystemId);
+            CreateSubsystem<XRInputSubsystemDescriptor, XRInputSubsystem>(s_InputSubsystemDescriptors, "AppMana-Input");
 
 
             var sessionSubsystem = GetLoadedSubsystem<XRSessionSubsystem>();

@@ -66,6 +66,8 @@ namespace AppManaPublic.Editor
                 serializedObject.FindProperty(nameof(RemotePlayableConfiguration.m_RotationCoefficient));
             m_PositionCoefficient =
                 serializedObject.FindProperty(nameof(RemotePlayableConfiguration.m_PositionCoefficient));
+            m_EnableAllInputActions =
+                serializedObject.FindProperty(nameof(RemotePlayableConfiguration.m_EnableAllInputActions));
         }
 
         public override void OnInspectorGUI()
