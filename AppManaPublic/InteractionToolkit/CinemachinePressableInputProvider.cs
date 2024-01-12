@@ -14,12 +14,13 @@ namespace AppMana.InteractionToolkit
     /// </summary>
     /// <para>This is used to implement a draggable or orbiting camera.</para>
     public partial class CinemachinePressableInputProvider :
-#if CINEMACHINE
+#if CINEMACHINE && ENABLE_INPUT_SYSTEM
         CinemachineInputProvider,
-#else
-        MonoBehaviour,
-#endif
         IHasInputActionReferences
+
+#else
+        MonoBehaviour
+#endif
     {
 #pragma warning disable CS0414
         [SerializeField] protected float m_ScrollWheelMultiplier = 0.1f;
@@ -155,6 +156,7 @@ namespace AppMana.InteractionToolkit
             return values[axis];
         }
 #endif
+#if ENABLE_INPUT_SYSTEM && CINEMACHINE
         public IHasInputActionReferences.InputActionReferenceProperty[] inputActionReferenceProperties => new[]
         {
             new IHasInputActionReferences.InputActionReferenceProperty(() => m_EnableWhenPressed,
@@ -162,5 +164,6 @@ namespace AppMana.InteractionToolkit
             new(() => XYAxis, value => XYAxis = value),
             new(() => ZAxis, value => ZAxis = value)
         };
+#endif
     }
 }

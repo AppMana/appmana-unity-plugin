@@ -232,7 +232,10 @@ namespace AppManaPublic.Editor
                     {
                         text = "On Player Connected", tooltip = "Called when this player connects to the experience"
                     });
-
+                EditorGUILayout.HelpBox(
+                    "Use the On Player Connected event instead of Start to start your game. Start is called long before this event, when no user is connected. Perform asset loading in Start to ensure your game loads quickly. Don't put code that loads effects and models in On Player Connected; use Start. Don't start your game in Start, wait until a player connects in On Player Connected.",
+                    MessageType.Info);
+                EditorGUILayout.Space();
                 EditorGUILayout.PropertyField(m_OnPlayerDisconnected,
                     new GUIContent
                     {
