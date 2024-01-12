@@ -4,6 +4,7 @@ using AppMana.UI.TMPro;
 using TMPro;
 using UnityEngine;
 #if UNITY_INPUTSYSTEM
+using AppMana.InteractionToolkit;
 using UnityEngine.InputSystem;
 #endif
 using UnityEngine.UI;
@@ -172,7 +173,7 @@ namespace AppManaPublic.Configuration
             if (inputActionReferences.Length > 0)
             {
                 Debug.LogWarning(
-                    $"AppMana found {nameof(InputActionReference)} objects in your scene. Use " +
+                    $"AppMana found {nameof(InputActionReference)} objects in your scene. Use {nameof(MultiplayerInputActionReference)} or " +
                     $"{nameof(IHasInputActionReferences)} to allow {nameof(RemotePlayableConfiguration)} to discover " +
                     $"those references and correctly associate them with remote users' remote input devices.");
             }
