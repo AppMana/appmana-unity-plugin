@@ -25,6 +25,8 @@ namespace AppManaPublic.Editor
             PlayerSettings.MTRendering = true;
             PlayerSettings.graphicsJobs = true;
             PlayerSettings.graphicsJobMode = GraphicsJobMode.Native;
+            PlayerSettings.allowUnsafeCode = true;
+            PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;
         }
     }
 }
