@@ -170,13 +170,26 @@ namespace AppMana.Compatibility
         private static Key Convert(KeyCode oldKeyCode)
         {
             var keyCodeName = oldKeyCode.ToString();
-
+            
             if (Enum.TryParse(keyCodeName, out Key key))
             {
                 return key;
             }
 
-            throw new ArgumentException($"Invalid key name {keyCodeName}, use the {nameof(Key)} enum instead");
+            return oldKeyCode switch
+            {
+                KeyCode.Alpha0 => Key.Digit0,
+                KeyCode.Alpha1 => Key.Digit1,
+                KeyCode.Alpha2 => Key.Digit2,
+                KeyCode.Alpha3 => Key.Digit3,
+                KeyCode.Alpha4 => Key.Digit4,
+                KeyCode.Alpha5 => Key.Digit5,
+                KeyCode.Alpha6 => Key.Digit6,
+                KeyCode.Alpha7 => Key.Digit7,
+                KeyCode.Alpha8 => Key.Digit8,
+                KeyCode.Alpha9 => Key.Digit9,
+                _ => throw new ArgumentException($"Invalid key name {keyCodeName}, use the {nameof(Key)} enum instead")
+            };
         }
 
         public static bool GetKey(KeyCode key)
