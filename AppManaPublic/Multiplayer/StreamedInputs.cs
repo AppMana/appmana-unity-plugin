@@ -72,8 +72,8 @@ namespace AppMana.Multiplayer
                     replacement.eventMask = physicsRaycaster.eventMask;
                     replacement.remotePlayableConfiguration = player;
                     replacement.maxRayIntersections = physicsRaycaster.maxRayIntersections;
-                    Debug.LogWarning(
-                        $"{nameof(PhysicsRaycaster)} on {physicsRaycaster.gameObject.name} was replaced by a {nameof(PerUserPhysicsRaycaster)}. References to it, while rare, will be broken. Use the {nameof(PerUserPhysicsRaycaster)} instead");
+                    Debug.LogFormat(players.Length > 1 ? LogType.Error : LogType.Log, LogOption.None,physicsRaycaster,
+                        $"{nameof(PhysicsRaycaster)} on {physicsRaycaster.gameObject.name} was replaced by a {nameof(PerUserPhysicsRaycaster)}. Use the {nameof(PerUserPhysicsRaycaster)} instead. Select the object, switch your Inspector to Debug, then click the Slot Dial next to the Script slot on your {nameof(PhysicsRaycaster)} and select {nameof(PerUserPhysicsRaycaster)}. Then assign the {nameof(RemotePlayableConfiguration)} slot.");
                     Destroy(physicsRaycaster);
                 }
 
@@ -85,8 +85,8 @@ namespace AppMana.Multiplayer
                     replacement.eventMask = physics2dRaycaster.eventMask;
                     replacement.remotePlayableConfiguration = player;
                     replacement.maxRayIntersections = physics2dRaycaster.maxRayIntersections;
-                    Debug.LogWarning(
-                        $"{nameof(Physics2DRaycaster)} on {physicsRaycaster.gameObject.name} was replaced by a {nameof(PerUserPhysics2DRaycaster)}. References to it, while rare, will be broken. Use the {nameof(PerUserPhysics2DRaycaster)} instead");
+                    Debug.LogFormat(players.Length > 1 ? LogType.Error : LogType.Log, LogOption.None,physics2dRaycaster,
+                        $"{nameof(Physics2DRaycaster)} on {physics2dRaycaster.gameObject.name} was replaced by a {nameof(PerUserPhysics2DRaycaster)}. Use the {nameof(PerUserPhysics2DRaycaster)} instead. Select the object, switch your Inspector to Debug, then click the Slot Dial next to the Script slot on your {nameof(Physics2DRaycaster)} and select {nameof(PerUserPhysics2DRaycaster)}. Then assign the {nameof(RemotePlayableConfiguration)} slot.");
                     Destroy(physics2dRaycaster);
                 }
 
@@ -104,8 +104,8 @@ namespace AppMana.Multiplayer
                     replacement.blockingObjects = canvasRaycaster.blockingObjects;
                     replacement.ignoreReversedGraphics = canvasRaycaster.ignoreReversedGraphics;
                     replacement.remotePlayableConfiguration = player;
-                    Debug.LogWarning(
-                        $"{nameof(GraphicRaycaster)} on {canvasRaycaster.gameObject.name} was replaced by a {nameof(PerUserGraphicRaycaster)}. References to it, while rare, will be broken. Use the {nameof(PerUserGraphicRaycaster)} instead");
+                    Debug.LogFormat(players.Length > 1 ? LogType.Error : LogType.Log, LogOption.None,canvasRaycaster,
+                        $"{nameof(GraphicRaycaster)} on {canvasRaycaster.gameObject.name} was replaced by a {nameof(PerUserGraphicRaycaster)}. Use the {nameof(PerUserGraphicRaycaster)} instead. Select the object, switch your Inspector to Debug, then click the Slot Dial next to the Script slot on your {nameof(GraphicRaycaster)} and select {nameof(PerUserGraphicRaycaster)}. Then assign the {nameof(RemotePlayableConfiguration)} slot.");
                     Destroy(canvasRaycaster);
                 }
             }

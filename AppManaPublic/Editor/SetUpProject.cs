@@ -21,12 +21,16 @@ namespace AppManaPublic.Editor
                 graphicsApis);
             PlayerSettings.runInBackground = true;
             PlayerSettings.SplashScreen.show = false;
+#pragma warning disable CS0618 // Type or member is obsolete
             PlayerSettings.assemblyVersionValidation = false;
+#pragma warning restore CS0618 // Type or member is obsolete
             PlayerSettings.MTRendering = true;
             PlayerSettings.graphicsJobs = true;
             PlayerSettings.graphicsJobMode = GraphicsJobMode.Native;
             PlayerSettings.allowUnsafeCode = true;
+#if UNITY_2022_1_OR_NEWER
             PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;
+#endif
         }
     }
 }

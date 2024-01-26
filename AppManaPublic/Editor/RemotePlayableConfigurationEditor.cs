@@ -290,7 +290,7 @@ namespace AppManaPublic.Editor
                 if (remotePlayableConfigurations.Length > 1)
                 {
                     var inputActionReferencesInScene = UnityUtilities.FindObjectsByType<InputActionReference>();
-                    if (inputActionReferencesInScene.Length > 0)
+                    if (inputActionReferencesInScene.Length > 0 && !Application.isPlaying)
                     {
                         EditorGUILayout.HelpBox(
                             $"You have ordinary {nameof(InputActionReference)} objects in your scene, but you are making a multiplayer game. Use {nameof(MultiplayerInputActionReference)}, and add the actions to the {nameof(InputActionAsset)} associated with this component ({m_Actions.serializedObject?.targetObject?.name ?? "none set"}) instead to ensure each user's devices are correctly associated with their corresponding actions.",
@@ -309,12 +309,12 @@ namespace AppManaPublic.Editor
                 }
 
 
-                if (m_EnablePlayerPrefs.boolValue || m_EnableUrlParameters.boolValue)
+                if (m_EnableAugmentedReality.boolValue)
                 {
                     EditorGUILayout.HelpBox(new GUIContent
                     {
                         text =
-                            $"{nameof(RemotePlayableConfiguration.playerPrefs)} and {nameof(RemotePlayableConfiguration.urlParameters)} can only be accessed after a player has been connected. You are notified of a connection in {nameof(RemotePlayableConfiguration)}.{nameof(RemotePlayableConfiguration.onPlayerConnected)}, either by dragging and dropping a method into the event slot in the editor or by calling {nameof(RemotePlayableConfiguration)}.{nameof(RemotePlayableConfiguration.onPlayerConnected)}.{nameof(UnityEvent.AddListener)}."
+                            $"Experimental augmented reality features are enabled. When using AR Foundation, attach a TrackedPoseDriver to the objects you want to follow the device. When AR Foundation is not enabled in your project, the camera's local position and local orientation will be set to the camera pose instead."
                     });
                 }
 

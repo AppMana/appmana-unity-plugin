@@ -111,14 +111,17 @@ namespace AppManaPublic.Configuration
             var tmpInputFields = UnityUtilities.FindObjectsByType<TMP_InputField>(true);
             if (inputFields.Length > 0 || tmpInputFields.Length > 0)
             {
+                var monoBehaviours = inputFields.Concat<MonoBehaviour>(tmpInputFields).ToArray();
+                var gameObjectNames = string.Join(", ", monoBehaviours.Select(comp => comp.gameObject.name));
                 Debug.LogError(
                     $"{validationPrefix}AppMana does not support Unity's native {nameof(InputField)} and {nameof(TMP_InputField)} " +
                     $"components. They incorrectly still use IMGUI for text input when using Input System. We rewrote " +
                     $"the component to use Input System alone. Please use {nameof(TMP_InputSystemInputField)} by" +
                     $" switching your Inspector to Debug mode, selecting your {nameof(TMP_InputField)} object, then " +
                     $"dragging and dropping our {nameof(TMP_InputSystemInputField)} into the script slot on the " +
-                    $"component. {inputFields.Length} {nameof(InputField)}(s) and {tmpInputFields} " +
-                    $"{nameof(TMP_InputField)}(s) were found that need to be updated.");
+                    $"component. {inputFields.Length} {nameof(InputField)}(s) and {tmpInputFields.Length} " +
+                    $"{nameof(TMP_InputField)}(s) were found that need to be updated.\n{gameObjectNames}",
+                    monoBehaviours[0]);
             }
 
 
@@ -175,7 +178,7 @@ namespace AppManaPublic.Configuration
                 Debug.LogWarning(
                     $"AppMana found {nameof(InputActionReference)} objects in your scene. Use {nameof(MultiplayerInputActionReference)} or " +
                     $"{nameof(IHasInputActionReferences)} to allow {nameof(RemotePlayableConfiguration)} to discover " +
-                    $"those references and correctly associate them with remote users' remote input devices.");
+                    $"those references and correctly associate them with remote users' remote input devices.", inputActionReferences[0]);
             }
 #endif
             if (remotePlayableConfigurations.Length == 0)
