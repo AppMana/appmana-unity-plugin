@@ -54,6 +54,7 @@ namespace AppMana.UI.TMPro
         public EventModifiers modifiers;
         public int button;
 
+#if TMP
         public static bool PopEvent(TMP_InputSystemInputField caller, Event processingEvent)
         {
             var inputSystemTMPInputFieldModule = InputSystemTMPInputFieldModule.ParentInstance(caller);
@@ -63,5 +64,6 @@ namespace AppMana.UI.TMPro
             }
             return inputSystemTMPInputFieldModule.PopEvent(caller, processingEvent);
         }
+#endif
     }
 }

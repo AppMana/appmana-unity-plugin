@@ -1,5 +1,7 @@
 using AppMana.UI.TMPro;
+#if TMP
 using TMPro;
+#endif
 using UnityEditor;
 using UnityEditor.AnimatedValues;
 using UnityEditor.UI;
@@ -11,9 +13,12 @@ using TMPro.EditorUtilities;
 namespace AppManaPublic.Editor
 {
     [CanEditMultipleObjects]
+#if TMP
     [CustomEditor(typeof(TMP_InputSystemInputField), true)]
+#endif
     public class TMP_InputSystemInputFieldEditor : SelectableEditor
     {
+#if TMP
         private struct m_foldout
         { // Track Inspector foldout panel states, globally.
             public static bool textInput = true;
@@ -282,5 +287,6 @@ namespace AppManaPublic.Editor
 
             serializedObject.ApplyModifiedProperties();
         }
+#endif
     }
 }

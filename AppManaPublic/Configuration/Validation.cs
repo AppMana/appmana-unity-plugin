@@ -1,7 +1,9 @@
 using System.Linq;
 using AppMana.ComponentModel;
 using AppMana.UI.TMPro;
+#if TMP
 using TMPro;
+#endif
 using UnityEngine;
 #if UNITY_INPUTSYSTEM
 using AppMana.InteractionToolkit;
@@ -106,6 +108,7 @@ namespace AppManaPublic.Configuration
                 }
             }
 
+#if TMP
             // check for input fields
             var inputFields = UnityUtilities.FindObjectsByType<InputField>(true);
             var tmpInputFields = UnityUtilities.FindObjectsByType<TMP_InputField>(true);
@@ -148,6 +151,7 @@ namespace AppManaPublic.Configuration
                         $"{nameof(RemotePlayableConfiguration)}(s).");
                 }
             }
+#endif
 
 
             // check for screen space overlay canvases

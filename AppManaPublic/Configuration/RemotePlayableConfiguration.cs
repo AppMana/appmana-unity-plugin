@@ -230,10 +230,12 @@ namespace AppManaPublic.Configuration
                 inputSystemUIModule.actionsAsset = m_Actions;
             }
 
+#if TMP
             foreach (var tmpInputFieldModule in GetComponentsInChildren<InputSystemTMPInputFieldModule>(true))
             {
                 tmpInputFieldModule.actionsAsset = m_Actions;
             }
+#endif
 
 #if UNITY_INPUTSYSTEM
             // todo: does this require extra includes?
