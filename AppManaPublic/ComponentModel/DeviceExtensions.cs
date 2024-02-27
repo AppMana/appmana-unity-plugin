@@ -100,7 +100,9 @@ namespace AppMana.ComponentModel
         /// <summary>
         /// Get the user associated with the input action callback.
         /// </summary>
+        /// <remarks>
         /// Useful for retrieving the user from a performed callback.
+        /// </remarks>
         /// <param name="callbackContext"></param>
         /// <returns></returns>
         public static InputUser? User(this InputAction.CallbackContext callbackContext)

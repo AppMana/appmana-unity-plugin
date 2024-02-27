@@ -57,9 +57,11 @@ return JSON.parse(data);
         /// <summary>
         /// Saves the player preferences.
         /// </summary>
+        /// <remarks>
         /// <para>
         /// The Unity API requires users to explicitly save changes to player preferences.
         /// </para>
+        /// </remarks>
         public async UniTask Save()
         {
             var json = JsonConvert.SerializeObject(m_State);

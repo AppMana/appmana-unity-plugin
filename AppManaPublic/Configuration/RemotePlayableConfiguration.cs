@@ -2,18 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using AppMana.Compatibility;
 using AppMana.ComponentModel;
 using AppMana.InteractionToolkit;
+using AppMana.Multiplayer;
 using AppMana.UI.TMPro;
 using AppManaPublic.ComponentModel;
 using Cysharp.Threading.Tasks;
+using UniRx;
+using UniRx.Diagnostics;
+using UniRx.Triggers;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.InputSystem.Users;
 using UnityEngine.InputSystem.XR;
+using UnityEngine.SceneManagement;
 using UnityEngine.Scripting;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -23,6 +30,7 @@ namespace AppManaPublic.Configuration
     /// <summary>
     /// Configures a streamable player in your game.
     /// </summary>
+    /// <remarks>
     /// <para>Connect the player's corresponding <c>Camera</c> (usually the main camera) to the Camera slot. This is the
     /// minimum amount of configuration needed for a working streamed player.</para>
     /// <para>Use <see cref="onPlayerConnected"/> to start your experience. <c>Start</c> will be called potentially long
@@ -47,6 +55,7 @@ namespace AppManaPublic.Configuration
     /// access the action to listen to by name. Unfortunately, you cannot use the generated code file, because Unity
     /// does not configure it correctly for any kind of multiplayer scenario (local multiplayer nor AppMana
     /// multiplayer).</para>
+    /// </remarks>
     [Preserve, DefaultExecutionOrder(10000)]
     public class RemotePlayableConfiguration : UIBehaviour, IEvalInPage
     {
@@ -88,6 +97,14 @@ namespace AppManaPublic.Configuration
         /// When true, enables all input actions from input action references in this scene, ensuring they are actually executed even if they are not referenced in the proper actions map.
         /// </summary>
         [SerializeField] internal bool m_EnableAllInputActions = true;
+
+        /// <summary>
+        /// When true, loading another scene will use heuristics to minimize the impact on streaming.
+        /// </summary>
+        /// <remarks>
+        /// These mitigations involve disabling the main camera if it is present in new scenes; disabling extra event systems; updating screen space canvases to use camera screen space; and preventing the first scene's main camera from being destroyed. Some of these mitigations will not be right for your application. Disable them, and either migrate your project to use one scene.
+        /// </remarks> 
+        [SerializeField] internal bool m_EnableMultipleSceneMitigations = true;
 
         /// <summary>
         /// Set the URL parameters when this project is offline, for example when running in the editor.
@@ -151,8 +168,49 @@ namespace AppManaPublic.Configuration
             m_OnPlayerConnected?.Invoke();
         }
 
+        /// <summary>
+        /// Override this method to change the default multiple scene mitigations when you choose to enable them but
+        /// want to specify different ones for your use case.
+        /// </summary>
+        protected virtual void DefaultMultipleSceneMitigations()
+        {
+            MultipleScenes.MultipleScenesMitigateDestructionOfRemotePlayableConfiguration(this);
+            MultipleScenes.MultipleScenesMitigateDestructionOfCamera(camera);
+            MultipleScenes.MultipleScenesMitigateMultipleMainCameras(this);
+            MultipleScenes.MultipleScenesMitigateMultipleInputModules(this);
+            MultipleScenes.MultipleScenesMitigateRaycasters();
+            MultipleScenes.MultipleScenesMitigateScreenSpaceOverlays(camera);
+        }
+
         protected virtual void AwakeImpl()
         {
+            if (SceneManager.sceneCountInBuildSettings > 1)
+            {
+                if (m_EnableMultipleSceneMitigations)
+                {
+                    DefaultMultipleSceneMitigations();
+                }
+                else
+                {
+                    var quitting = Observable
+                        .OnceApplicationQuit()
+                        .Select(_ => true)
+                        .ToReadOnlyReactiveProperty(false);
+
+                    camera
+                        .OnDestroyAsObservable()
+                        .Where(_ => !quitting.Value)
+                        .Take(1)
+                        .Subscribe(_ =>
+                        {
+                            Debug.LogError(
+                                $"The camera was destroyed while streaming. This will cause the stream to abruptly end. " +
+                                $"Call DontDestroyOnLoad, and pass the camera as the first argument. If you are using multiple scenes, you will need to delete or disable the main camera from those scenes.",
+                                camera.gameObject);
+                        });
+                }
+            }
+
             m_Index = Interlocked.Increment(ref counter);
             if (m_EnablePlayerPrefs)
             {

@@ -34,7 +34,7 @@ namespace AppManaPublic.Configuration
             {
                 Debug.LogError(
                     $"{validationPrefix}You must enable Input System as the exclusive Input handling backend under " +
-                    "Player Settings > Active Input Handling. This will correctly log errors if your game" +
+                    "Project Settings > Player > Active Input Handling (also found as Player Settings > Active Input Handling). This will correctly log errors if your game" +
                     $" executes {nameof(Input)} methods, like {nameof(Input.GetAxis)}, including third party" +
                     $" libraries, at runtime.");
             }
@@ -44,14 +44,6 @@ namespace AppManaPublic.Configuration
             {
                 Debug.LogError(
                     $"{validationPrefix}You must enable a scene for building in your Build Settings window.");
-            }
-
-            if (enabledScenes > 1)
-            {
-                Debug.LogWarning(
-                    $"{validationPrefix}You are building multiple scenes. You can only load additional scenes " +
-                    $"additively. Using {nameof(SceneManager)}.{nameof(SceneManager.LoadScene)} is not " +
-                    $"supported because AppMana cannot guarantee you do not destroy the streaming camera.");
             }
         }
 #endif
@@ -169,22 +161,11 @@ namespace AppManaPublic.Configuration
                 canvas.planeDistance = guessCamera.nearClipPlane + 0.001f;
                 Debug.LogWarning(
                     $"{validationPrefix}A Screen Space Overlay canvas was found and is not supported by AppMana by the name of " +
-                    $"{canvas.gameObject.name}. Switching to {nameof(RenderMode.ScreenSpaceCamera)} and using camera " +
-                    $"{guessCamera?.gameObject.name ?? "(not found)"}",
+                    $"{canvas.gameObject.name}. Switching to {nameof(RenderMode)}.{nameof(RenderMode.ScreenSpaceCamera)} and using camera " +
+                    $"{guessCamera?.gameObject.name ?? "(not found)"}. Remove this warning by changing the Render Mode of the camera to Screen Space - Camera and choosing an appropriate Distance.",
                     canvas);
             }
-
-            // check for input action references that will need to be associated with the actual input action map
-#if UNITY_INPUTSYSTEM
-            var inputActionReferences = UnityUtilities.FindObjectsByType<InputActionReference>();
-            if (inputActionReferences.Length > 0)
-            {
-                Debug.LogWarning(
-                    $"AppMana found {nameof(InputActionReference)} objects in your scene. Use {nameof(MultiplayerInputActionReference)} or " +
-                    $"{nameof(IHasInputActionReferences)} to allow {nameof(RemotePlayableConfiguration)} to discover " +
-                    $"those references and correctly associate them with remote users' remote input devices.", inputActionReferences[0]);
-            }
-#endif
+            
             if (remotePlayableConfigurations.Length == 0)
             {
                 PluginBase.EnsurePlugins();

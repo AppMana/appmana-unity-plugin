@@ -8,8 +8,10 @@ namespace AppMana.Compatibility
     /// <summary>
     /// This class provides compatibility with the <see cref="UnityEngine.PlayerPrefs"/> class.
     /// </summary>
+    /// <remarks>
     /// <para>This differs from the default <c>PlayerPrefs</c> in two ways: This class saves after every preference
     /// change. Each type (<c>string</c>, <c>int</c> and <c>float</c>) has a distinct key mapping.</para>
+    /// </remarks>
     public static class PlayerPrefs
     {
         private static RemotePlayerPrefs m_PlayerPrefs;

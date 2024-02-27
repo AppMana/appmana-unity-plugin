@@ -1,5 +1,8 @@
-﻿using System.Runtime.CompilerServices;
-using UnityEngine;
+﻿using System;
+using System.Runtime.CompilerServices;
+using UniRx;
+using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 namespace AppMana.ComponentModel
 {
@@ -8,6 +11,11 @@ namespace AppMana.ComponentModel
     /// </summary>
     internal static class UnityUtilities
     {
+        /// <summary>
+        /// A wrapper around the Unity API call for object finding.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T FindFirstObjectByType<T>() where T : UnityEngine.Object
         {
@@ -18,6 +26,12 @@ namespace AppMana.ComponentModel
 #endif
         }
 
+        /// <summary>
+        /// A wrapper around the Unity API call for object finding.
+        /// </summary>
+        /// <param name="includeInactive"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] FindObjectsByType<T>(bool includeInactive = false) where T : UnityEngine.Object
         {
@@ -34,6 +48,19 @@ namespace AppMana.ComponentModel
         public static T FindAnyObjectByType<T>() where T : UnityEngine.Object
         {
             return FindFirstObjectByType<T>();
+        }
+
+
+        /// <summary>
+        /// An event that fires when a new scene is loaded.
+        /// </summary>
+        /// <returns>A observable stream of scene events.</returns>
+        public static IObservable<(Scene, LoadSceneMode)> OnSceneLoadedAsObservable()
+        {
+            return Observable.FromEvent<UnityAction<Scene, LoadSceneMode>, (Scene, LoadSceneMode)>(
+                h => (scene, mode) => h((scene, mode)),
+                h => SceneManager.sceneLoaded += h,
+                h => SceneManager.sceneLoaded -= h);
         }
     }
 }

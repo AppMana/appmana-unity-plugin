@@ -30,8 +30,8 @@ namespace AppMana.Multiplayer
                 activeEditorGameViewTargetField = null;
             }
         }
-
-        protected override void Awake()
+        
+        protected override void Start()
         {
             m_RemotePlayableConfiguration ??= gameObject.GetComponentInParent<RemotePlayableConfiguration>() ??
                                               gameObject.GetComponentInChildren<RemotePlayableConfiguration>();
@@ -41,7 +41,7 @@ namespace AppMana.Multiplayer
                     $"Assign a {nameof(RemotePlayableConfiguration)} to the {nameof(PerUserGraphicRaycaster)} on {gameObject.name}, because none was found.");
             }
 
-            base.Awake();
+            base.Start();
         }
 
 

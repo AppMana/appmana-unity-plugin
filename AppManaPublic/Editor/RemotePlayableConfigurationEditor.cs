@@ -11,6 +11,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using PlayerPrefs = AppMana.Compatibility.PlayerPrefs;
 
@@ -33,6 +34,7 @@ namespace AppManaPublic.Editor
         private SerializedProperty m_EnableUrlParameters;
         private SerializedProperty m_EnableAugmentedReality;
         private SerializedProperty m_EnableAllInputActions;
+        private SerializedProperty m_EnableMultipleSceneMitigations;
         private SerializedProperty m_OfflineUrlParameters;
         private SerializedProperty m_RotationCoefficient;
         private SerializedProperty m_PositionCoefficient;
@@ -68,6 +70,8 @@ namespace AppManaPublic.Editor
                 serializedObject.FindProperty(nameof(RemotePlayableConfiguration.m_PositionCoefficient));
             m_EnableAllInputActions =
                 serializedObject.FindProperty(nameof(RemotePlayableConfiguration.m_EnableAllInputActions));
+            m_EnableMultipleSceneMitigations =
+                serializedObject.FindProperty(nameof(RemotePlayableConfiguration.m_EnableMultipleSceneMitigations));
         }
 
         public override void OnInspectorGUI()
@@ -80,6 +84,7 @@ namespace AppManaPublic.Editor
                     UnityUtilities.FindObjectsByType<RemotePlayableConfiguration>();
                 var myIndex = Array.IndexOf(remotePlayableConfigurations, m_Target);
 
+                EditorGUI.BeginDisabledGroup(Application.isPlaying);
                 EditorGUILayout.PropertyField(m_Camera,
                     new GUIContent { text = "Camera", tooltip = "Set this to the camera to stream for this player" });
                 if (m_Camera.objectReferenceValue == null)
@@ -111,7 +116,7 @@ namespace AppManaPublic.Editor
                         }
                     }
                 }
-
+                
                 EditorGUILayout.PropertyField(m_AudioListener,
                     new GUIContent
                     {
@@ -278,6 +283,17 @@ namespace AppManaPublic.Editor
                         });
                 }
 
+                EditorGUI.BeginDisabledGroup(remotePlayableConfigurations.Length > 1 ||
+                                             SceneManager.sceneCountInBuildSettings == 1);
+                EditorGUILayout.PropertyField(m_EnableMultipleSceneMitigations,
+                    new GUIContent
+                    {
+                        text = "Enable Multiple Scene Mitigations",
+                        tooltip =
+                            $"When using multiple scenes, this enables a heuristic approach to support your project without any changes. Try this first when testing your game."
+                    });
+                EditorGUI.EndDisabledGroup();
+
                 EditorGUI.BeginDisabledGroup(remotePlayableConfigurations.Length > 1);
                 EditorGUILayout.PropertyField(m_EnableAllInputActions,
                     new GUIContent
@@ -327,7 +343,7 @@ namespace AppManaPublic.Editor
                     });
                 }
 
-
+                EditorGUI.EndDisabledGroup();
                 if (m_HasPrivatePlugin)
                 {
                     EditorGUILayout.Space();

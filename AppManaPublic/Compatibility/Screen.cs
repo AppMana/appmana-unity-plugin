@@ -9,10 +9,12 @@ namespace AppMana.Compatibility
     /// <summary>
     /// This class provides a familiar API for Screens.
     /// </summary>
+    /// <remarks>
     /// <para>AppMana streams do not have screens nor is the size easy to interpret. In DOM pixel units, query the
     /// canvas size instead. With a <c>PhysicalScaler</c>, a canvas will report the correct dimensions of the user's
     /// viewport. This class will report the size of the user's video stream.</para>
     /// <para>Some legacy effects depend on screens. Do not use them if possible.</para>
+    /// </remarks>
     public static class Screen
     {
         private static bool m_WasAccessed;

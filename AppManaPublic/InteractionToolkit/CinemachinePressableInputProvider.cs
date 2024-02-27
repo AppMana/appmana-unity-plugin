@@ -12,7 +12,9 @@ namespace AppMana.InteractionToolkit
     /// <summary>
     /// Implements a Cinemachine input provider for Input System that also takes into consideration when a <see cref="Pointer"/> is pressed.
     /// </summary>
+    /// <remarks>
     /// <para>This is used to implement a draggable or orbiting camera.</para>
+    /// </remarks>
     public partial class CinemachinePressableInputProvider :
 #if CINEMACHINE && ENABLE_INPUT_SYSTEM
         CinemachineInputProvider,
@@ -44,7 +46,7 @@ namespace AppMana.InteractionToolkit
             set => m_EnableWhenPressed = value;
         }
 
-#if CINEMACHINE
+#if CINEMACHINE && ENABLE_INPUT_SYSTEM
         public virtual float[] values
         {
             get => m_Values;

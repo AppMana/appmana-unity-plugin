@@ -8,9 +8,11 @@
         /// <summary>
         /// Closes the lobby from further players.
         /// </summary>
+        /// <remarks>
         /// <para>
         /// Once called, all the available player slots will be closed, and no more players will be able to join
         /// this Unity instance.</para>
+        /// </remarks>
         void CloseLobby();
     }
 }

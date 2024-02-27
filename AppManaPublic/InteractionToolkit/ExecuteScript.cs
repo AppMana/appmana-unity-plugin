@@ -10,8 +10,10 @@ namespace AppMana.InteractionToolkit
     /// <summary>
     /// Executes JavaScript in the browser hosting the stream.
     /// </summary>
+    /// <remarks>
     /// Call <see cref="Execute"/> to run the code in the browser. Specify the code using the <c>javascript</c>
     /// property.
+    /// </remarks>
     public class ExecuteScript : MonoBehaviour
     {
         [SerializeField, Tooltip("The code to execute in your browser"), Multiline(3)]

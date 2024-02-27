@@ -10,9 +10,11 @@ namespace AppMana.InteractionToolkit
     /// Configures a Cinemachine pressable input provider to be enabled when the component this script is attached to
     /// is dragged.
     /// </summary>
+    /// <remarks>
     /// <para>
     /// The purpose of this script is to enable dragging on a large background collider to move a camera, much like
     /// dragging in the background of many apps and games moves the camera.</para>
+    /// </remarks>
     public partial class CinemachineEnableWhenDragged : UIBehaviour
     {
         [SerializeField] private CinemachinePressableInputProvider m_InputProvider;

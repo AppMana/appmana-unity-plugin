@@ -10,8 +10,10 @@ namespace AppManaPublic.ComponentModel
     /// <summary>
     /// The URL parameters for the visitor.
     /// </summary>
+    /// <remarks>
     /// <para>Set the default parameters when editing offline using the
     /// <see cref="RemotePlayableConfiguration.urlParameters"/> field in the inspector.</para>
+    /// </remarks>
     /// <see cref="As{T}"/>
     public class UrlParameters
     {
@@ -40,6 +42,7 @@ return getQueryParams();
         /// <summary>
         /// Read the URL parameters as an object.
         /// </summary>
+        /// <remarks>
         /// <para>Use this to read your parameters into a strongly typed object. For example, suppose you want to
         /// configure a timeout and label using URL parameters <c>?timeout=55&label=Hello%20world</c>. First, define a \
         /// class:</para>
@@ -61,6 +64,7 @@ return getQueryParams();
         /// ]]>
         /// </example>
         /// <para>This will throw a <see cref="JsonException"/> if the parameters cannot be converted.</para>
+        /// </remarks>
         /// <typeparam name="T">A strongly typed model for your URL parameters</typeparam>
         /// <returns>The object</returns>
         public T As<T>()

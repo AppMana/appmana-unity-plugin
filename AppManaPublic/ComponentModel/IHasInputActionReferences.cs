@@ -8,6 +8,7 @@ namespace AppMana.ComponentModel
     /// <summary>
     /// Used by <see cref="RemotePlayableConfiguration"/> to fix inputs.
     /// </summary>
+    /// <remarks>
     /// <para>
     /// When using input actions, any <c>.performed +=</c> and <c>.canceled +=</c> handlers should be declared on the input
     /// actions asset actions retrieved from <c>RemotePlayableConfiguration.actions</c> asset property in a <c>Start</c> or later;
@@ -43,6 +44,7 @@ namespace AppMana.ComponentModel
     /// }
     /// </code>
     /// </example>
+    /// </remarks>
     /// <seealso cref="MultiplayerInputActionReference"/>
     public interface IHasInputActionReferences
     {

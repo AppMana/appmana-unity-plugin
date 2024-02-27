@@ -51,64 +51,7 @@ namespace AppMana.Multiplayer
         {
             instance = this;
 
-            var players = UnityUtilities.FindObjectsByType<RemotePlayableConfiguration>(true);
-
-            // find the player inputs
-            var playerGameObjects = string.Join(", ", players.Select(player => player.gameObject.name));
-            Assert.AreEqual(players.Length,
-                players.Select(player => player).Where(playerInput => playerInput != null).Distinct()
-                    .Count(),
-                $"Assign each {nameof(RemotePlayableConfiguration)} on {playerGameObjects} a distinct {nameof(PlayerInput)}");
-
-
-            // fix the raycasters
-            foreach (var player in players)
-            {
-                // 3d
-                var physicsRaycaster = player.camera.GetComponent<PhysicsRaycaster>();
-                if (physicsRaycaster != null && physicsRaycaster is not PerUserPhysicsRaycaster)
-                {
-                    var replacement = physicsRaycaster.gameObject.AddComponent<PerUserPhysicsRaycaster>();
-                    replacement.eventMask = physicsRaycaster.eventMask;
-                    replacement.remotePlayableConfiguration = player;
-                    replacement.maxRayIntersections = physicsRaycaster.maxRayIntersections;
-                    Debug.LogFormat(players.Length > 1 ? LogType.Error : LogType.Log, LogOption.None,physicsRaycaster,
-                        $"{nameof(PhysicsRaycaster)} on {physicsRaycaster.gameObject.name} was replaced by a {nameof(PerUserPhysicsRaycaster)}. Use the {nameof(PerUserPhysicsRaycaster)} instead. Select the object, switch your Inspector to Debug, then click the Slot Dial next to the Script slot on your {nameof(PhysicsRaycaster)} and select {nameof(PerUserPhysicsRaycaster)}. Then assign the {nameof(RemotePlayableConfiguration)} slot.");
-                    Destroy(physicsRaycaster);
-                }
-
-                // 2d
-                var physics2dRaycaster = player.camera.GetComponent<Physics2DRaycaster>();
-                if (physics2dRaycaster != null && physics2dRaycaster is not PerUserPhysics2DRaycaster)
-                {
-                    var replacement = physics2dRaycaster.gameObject.AddComponent<PerUserPhysics2DRaycaster>();
-                    replacement.eventMask = physics2dRaycaster.eventMask;
-                    replacement.remotePlayableConfiguration = player;
-                    replacement.maxRayIntersections = physics2dRaycaster.maxRayIntersections;
-                    Debug.LogFormat(players.Length > 1 ? LogType.Error : LogType.Log, LogOption.None,physics2dRaycaster,
-                        $"{nameof(Physics2DRaycaster)} on {physics2dRaycaster.gameObject.name} was replaced by a {nameof(PerUserPhysics2DRaycaster)}. Use the {nameof(PerUserPhysics2DRaycaster)} instead. Select the object, switch your Inspector to Debug, then click the Slot Dial next to the Script slot on your {nameof(Physics2DRaycaster)} and select {nameof(PerUserPhysics2DRaycaster)}. Then assign the {nameof(RemotePlayableConfiguration)} slot.");
-                    Destroy(physics2dRaycaster);
-                }
-
-                // canvas
-                var canvasRaycasters = player.camera.GetComponentsInChildren<GraphicRaycaster>(true);
-                foreach (var canvasRaycaster in canvasRaycasters)
-                {
-                    if (canvasRaycaster is PerUserGraphicRaycaster)
-                    {
-                        continue;
-                    }
-
-                    var replacement = canvasRaycaster.gameObject.AddComponent<PerUserGraphicRaycaster>();
-                    replacement.blockingMask = canvasRaycaster.blockingMask;
-                    replacement.blockingObjects = canvasRaycaster.blockingObjects;
-                    replacement.ignoreReversedGraphics = canvasRaycaster.ignoreReversedGraphics;
-                    replacement.remotePlayableConfiguration = player;
-                    Debug.LogFormat(players.Length > 1 ? LogType.Error : LogType.Log, LogOption.None,canvasRaycaster,
-                        $"{nameof(GraphicRaycaster)} on {canvasRaycaster.gameObject.name} was replaced by a {nameof(PerUserGraphicRaycaster)}. Use the {nameof(PerUserGraphicRaycaster)} instead. Select the object, switch your Inspector to Debug, then click the Slot Dial next to the Script slot on your {nameof(GraphicRaycaster)} and select {nameof(PerUserGraphicRaycaster)}. Then assign the {nameof(RemotePlayableConfiguration)} slot.");
-                    Destroy(canvasRaycaster);
-                }
-            }
+            var players = FixRaycasters();
 
 #if UNITY_EDITOR
             // find the local mouse
@@ -134,11 +77,12 @@ namespace AppMana.Multiplayer
                 else
                 {
                     player.PerformPairingWithDevice(localMouse);
-                    player.PerformPairingWithDevice(localKeyboard);    
+                    player.PerformPairingWithDevice(localKeyboard);
                 }
+
                 return;
             }
-            
+
             // create a fake mouse & keyboard device for each player
             var displayToMouseKeyboard = players
                 // players that have streaming enabled in editor will be connected via an offer
@@ -296,6 +240,72 @@ namespace AppMana.Multiplayer
                     inputEventPtr.handled = true;
                 });
 #endif
+        }
+
+        internal static RemotePlayableConfiguration[] FixRaycasters()
+        {
+            var players = UnityUtilities.FindObjectsByType<RemotePlayableConfiguration>(true);
+
+            // find the player inputs
+            var playerGameObjects = string.Join(", ", players.Select(player => player.gameObject.name));
+            Assert.AreEqual(players.Length,
+                players.Select(player => player).Where(playerInput => playerInput != null).Distinct()
+                    .Count(),
+                $"Assign each {nameof(RemotePlayableConfiguration)} on {playerGameObjects} a distinct {nameof(PlayerInput)}");
+
+
+            // fix the raycasters
+            foreach (var player in players)
+            {
+                // 3d
+                // this must always be on the camera
+                var physicsRaycaster = player.camera.GetComponent<PhysicsRaycaster>();
+                if (physicsRaycaster != null && physicsRaycaster is not PerUserPhysicsRaycaster)
+                {
+                    var replacement = physicsRaycaster.gameObject.AddComponent<PerUserPhysicsRaycaster>();
+                    replacement.eventMask = physicsRaycaster.eventMask;
+                    replacement.remotePlayableConfiguration = player;
+                    replacement.maxRayIntersections = physicsRaycaster.maxRayIntersections;
+                    Debug.LogFormat(players.Length > 1 ? LogType.Error : LogType.Log, LogOption.None, physicsRaycaster,
+                        $"{nameof(PhysicsRaycaster)} on {physicsRaycaster.gameObject.name} was replaced by a {nameof(PerUserPhysicsRaycaster)}. Use the {nameof(PerUserPhysicsRaycaster)} instead. Select the object, switch your Inspector to Debug, then click the Slot Dial next to the Script slot on your {nameof(PhysicsRaycaster)} and select {nameof(PerUserPhysicsRaycaster)}. Then assign the {nameof(RemotePlayableConfiguration)} slot.");
+                    Destroy(physicsRaycaster);
+                }
+
+                // 2d
+                var physics2dRaycaster = player.camera.GetComponent<Physics2DRaycaster>();
+                if (physics2dRaycaster != null && physics2dRaycaster is not PerUserPhysics2DRaycaster)
+                {
+                    var replacement = physics2dRaycaster.gameObject.AddComponent<PerUserPhysics2DRaycaster>();
+                    replacement.eventMask = physics2dRaycaster.eventMask;
+                    replacement.remotePlayableConfiguration = player;
+                    replacement.maxRayIntersections = physics2dRaycaster.maxRayIntersections;
+                    Debug.LogFormat(players.Length > 1 ? LogType.Error : LogType.Log, LogOption.None,
+                        physics2dRaycaster,
+                        $"{nameof(Physics2DRaycaster)} on {physics2dRaycaster.gameObject.name} was replaced by a {nameof(PerUserPhysics2DRaycaster)}. Use the {nameof(PerUserPhysics2DRaycaster)} instead. Select the object, switch your Inspector to Debug, then click the Slot Dial next to the Script slot on your {nameof(Physics2DRaycaster)} and select {nameof(PerUserPhysics2DRaycaster)}. Then assign the {nameof(RemotePlayableConfiguration)} slot.");
+                    Destroy(physics2dRaycaster);
+                }
+
+                // canvas
+                var canvasRaycasters = players.Length == 1 ? UnityUtilities.FindObjectsByType<GraphicRaycaster>() : player.camera.GetComponentsInChildren<GraphicRaycaster>(true);
+                foreach (var canvasRaycaster in canvasRaycasters)
+                {
+                    if (canvasRaycaster is PerUserGraphicRaycaster)
+                    {
+                        continue;
+                    }
+
+                    var replacement = canvasRaycaster.gameObject.AddComponent<PerUserGraphicRaycaster>();
+                    replacement.blockingMask = canvasRaycaster.blockingMask;
+                    replacement.blockingObjects = canvasRaycaster.blockingObjects;
+                    replacement.ignoreReversedGraphics = canvasRaycaster.ignoreReversedGraphics;
+                    replacement.remotePlayableConfiguration = player;
+                    Debug.LogFormat(players.Length > 1 ? LogType.Error : LogType.Log, LogOption.None, canvasRaycaster,
+                        $"{nameof(GraphicRaycaster)} on {canvasRaycaster.gameObject.name} was replaced by a {nameof(PerUserGraphicRaycaster)}. Use the {nameof(PerUserGraphicRaycaster)} instead. Select the object, switch your Inspector to Debug, then click the Slot Dial next to the Script slot on your {nameof(GraphicRaycaster)} and select {nameof(PerUserGraphicRaycaster)}. Then assign the {nameof(RemotePlayableConfiguration)} slot.");
+                    Destroy(canvasRaycaster);
+                }
+            }
+
+            return players;
         }
 
         /// <summary>
