@@ -26,8 +26,9 @@ namespace AppMana.Compatibility
             UnityUtilities.OnSceneLoadedAsObservable()
                 .Subscribe(_ =>
                 {
-                    var canvases = UnityUtilities.FindObjectsByType<Canvas>()
-                        .Where(canvas => canvas.renderMode == RenderMode.ScreenSpaceOverlay);
+                    var canvases = UnityUtilities.FindObjectsByType<Canvas>(true)
+                        .Where(canvas => canvas.renderMode == RenderMode.ScreenSpaceOverlay ||
+                                         (canvas.renderMode == RenderMode.ScreenSpaceCamera && !canvas.worldCamera));
                     foreach (var canvas in canvases)
                     {
                         canvas.renderMode = RenderMode.ScreenSpaceCamera;
@@ -61,7 +62,7 @@ namespace AppMana.Compatibility
             UnityUtilities.OnSceneLoadedAsObservable()
                 .Subscribe(_ =>
                 {
-                    var otherInputModules = UnityUtilities.FindObjectsByType<BaseInputModule>()
+                    var otherInputModules = UnityUtilities.FindObjectsByType<BaseInputModule>(true)
                         .Where(otherInputModule => otherInputModule != thisSceneInputModule);
                     foreach (var otherInputModule in otherInputModules)
                     {
@@ -93,7 +94,7 @@ namespace AppMana.Compatibility
                             remotePlayableConfiguration.camera.gameObject.AddComponent<ParentConstraint>();
                     }
 
-                    var otherMainCameras = UnityUtilities.FindObjectsByType<Camera>()
+                    var otherMainCameras = UnityUtilities.FindObjectsByType<Camera>(true)
                         .Where(camera => camera.CompareTag("MainCamera"))
                         .Where(otherCamera => remotePlayableConfiguration.camera != otherCamera)
                         .ToArray();
