@@ -58,29 +58,50 @@ namespace AppMana.Multiplayer
             var localMouse = InputSystem.devices.OfType<Mouse>().FirstOrDefault();
             var localKeyboard = InputSystem.devices.OfType<Keyboard>().FirstOrDefault();
 
+            // when using the simulator, a touchscreen device might be added
+            var localTouchscreen = InputSystem.devices.OfType<Touchscreen>().FirstOrDefault();
+
+            var localDevices = new InputDevice[] { localMouse, localKeyboard, localTouchscreen }
+                .Where(device => device != null)
+                .ToArray();
+
             // in single player, we can associate the editor controls directly
             if (players.Length == 1)
             {
                 var player = players[0];
                 if (player.enableStreamingInEditor)
                 {
-                    InputSystem.DisableDevice(localMouse);
-                    InputSystem.DisableDevice(localKeyboard);
+                    foreach (var device in localDevices)
+                    {
+                        InputSystem.DisableDevice(device);
+                    }
+
                     Observable.OnceApplicationQuit()
                         .Subscribe(_ =>
                         {
-                            InputSystem.EnableDevice(localMouse);
-                            InputSystem.EnableDevice(localKeyboard);
+                            foreach (var device in localDevices)
+                            {
+                                InputSystem.EnableDevice(localMouse);
+                            }
                         })
                         .AddTo(this);
                 }
                 else
                 {
-                    player.PerformPairingWithDevice(localMouse);
-                    player.PerformPairingWithDevice(localKeyboard);
+                    foreach (var device in localDevices)
+                    {
+                        InputSystem.EnableDevice(device);
+                        player.PerformPairingWithDevice(device);
+                    }
                 }
 
                 return;
+            }
+
+            if (localTouchscreen != null)
+            {
+                Debug.LogWarning(
+                    "The simulator view is open when running multiplayer. This creates a simulated touchscreen device and will not issue commands through the multiplayer input simulator. Switch all views from Simulator to Game view when using multiplayer simulation features.");
             }
 
             // create a fake mouse & keyboard device for each player
@@ -111,8 +132,10 @@ namespace AppMana.Multiplayer
 
                 try
                 {
-                    user.UnpairDevice(localMouse);
-                    user.UnpairDevice(localKeyboard);
+                    foreach (var device in localDevices)
+                    {
+                        user.UnpairDevice(device);
+                    }
                 }
                 catch (Exception exception)
                 {
@@ -286,7 +309,9 @@ namespace AppMana.Multiplayer
                 }
 
                 // canvas
-                var canvasRaycasters = players.Length == 1 ? UnityUtilities.FindObjectsByType<GraphicRaycaster>() : player.camera.GetComponentsInChildren<GraphicRaycaster>(true);
+                var canvasRaycasters = players.Length == 1
+                    ? UnityUtilities.FindObjectsByType<GraphicRaycaster>()
+                    : player.camera.GetComponentsInChildren<GraphicRaycaster>(true);
                 foreach (var canvasRaycaster in canvasRaycasters)
                 {
                     if (canvasRaycaster is PerUserGraphicRaycaster)

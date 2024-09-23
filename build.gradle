@@ -2,4 +2,4 @@ plugins {
   id 'base'
 }
 
-version '1.0.2'
+version '2.4.5'
