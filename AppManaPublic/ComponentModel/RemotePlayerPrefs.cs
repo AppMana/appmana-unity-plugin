@@ -42,7 +42,11 @@ namespace AppMana.ComponentModel
         {
             m_State = await m_EvalInPage.EvalInPage($@"
 const data = localStorage.getItem(""{localStorageKey}"");
-return JSON.parse(data);
+try {{
+    return JSON.parse(data);
+}} catch (exc) {{
+    return null;
+}}
 "
                 , () =>
                 {
@@ -65,9 +69,10 @@ return JSON.parse(data);
         public async UniTask Save()
         {
             var json = JsonConvert.SerializeObject(m_State);
+            json = json.Replace("`", "\\`");
             await m_EvalInPage.EvalInPage(
                 @$"
-const json = '{json}';
+const json = `{json}`;
 localStorage.setItem(""{localStorageKey}"", json);
 return true;
 ", () =>
