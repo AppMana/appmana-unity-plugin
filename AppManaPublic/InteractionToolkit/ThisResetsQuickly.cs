@@ -24,7 +24,11 @@ namespace AppMana.InteractionToolkit
             var rigidBody = GetComponent<Rigidbody>();
             var position = transform.position;
             var rotation = transform.rotation;
+#if UNITY_6000_0_OR_NEWER
+            var initialVelocity = rigidBody?.linearVelocity ?? Vector3.zero;
+#else
             var initialVelocity = rigidBody?.velocity ?? Vector3.zero;
+#endif
             var set = new HashSet<GameObject>(m_OnCollisionWith.Select(c => c.gameObject));
 
             var observables = new List<IObservable<Unit>>();
@@ -59,7 +63,11 @@ namespace AppMana.InteractionToolkit
                     if (rigidBody != null)
                     {
                         rigidBody.isKinematic = true;
+#if UNITY_6000_0_OR_NEWER
+                        rigidBody.linearVelocity = initialVelocity;
+#else
                         rigidBody.velocity = initialVelocity;
+#endif
                         rigidBody.isKinematic = false;    
                     }
                 })
