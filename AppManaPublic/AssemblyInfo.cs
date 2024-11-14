@@ -10,6 +10,6 @@ namespace AppManaPublic
 {
     internal static class AssemblyInfo
     {
-        internal const string version = "2.4.5";
+        internal const string version = "2.4.6";
     }    
 }

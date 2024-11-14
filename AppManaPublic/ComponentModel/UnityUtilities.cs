@@ -20,7 +20,7 @@ namespace AppMana.ComponentModel
         public static T FindFirstObjectByType<T>() where T : UnityEngine.Object
         {
 #if UNITY_2023_1_OR_NEWER
-            return Object.FindFirstObjectByType<T>();
+            return UnityEngine.Object.FindFirstObjectByType<T>();
 #else
             return UnityEngine.Object.FindObjectOfType<T>();
 #endif
@@ -36,9 +36,9 @@ namespace AppMana.ComponentModel
         public static T[] FindObjectsByType<T>(bool includeInactive = false) where T : UnityEngine.Object
         {
 #if UNITY_2023_1_OR_NEWER
-            return Object.FindObjectsByType<T>(
-                includeInactive ? FindObjectsInactive.Include : FindObjectsInactive.Exclude,
-                FindObjectsSortMode.InstanceID);
+            return UnityEngine.Object.FindObjectsByType<T>(
+                includeInactive ? UnityEngine.FindObjectsInactive.Include : UnityEngine.FindObjectsInactive.Exclude,
+                UnityEngine.FindObjectsSortMode.InstanceID);
 #else
             return UnityEngine.Object.FindObjectsOfType<T>(includeInactive);
 #endif
