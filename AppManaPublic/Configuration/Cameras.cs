@@ -8,7 +8,7 @@ namespace AppManaPublic.Configuration
     public class Cameras
     {
         public static Camera guessedMainCamera => Camera.main
-                                                  ?? Object.FindObjectOfType<Camera>()
-                                                  ?? Object.FindObjectOfType<Camera>(true);
+                                                  ?? Object.FindFirstObjectByType<Camera>()
+                                                  ?? Object.FindFirstObjectByType<Camera>(FindObjectsInactive.Include);
     }
 }

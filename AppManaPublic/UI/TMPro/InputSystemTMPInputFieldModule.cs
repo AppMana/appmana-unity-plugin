@@ -18,8 +18,10 @@ namespace AppMana.UI.TMPro
     {
         private static readonly ComponentCache m_ParentCache = new();
         [SerializeField] private InputActionAsset m_ActionsAsset;
+#pragma warning disable 0414
         [SerializeField] private float m_RepeatDelaySeconds = 0.16f;
         [SerializeField] private float m_RepeatPeriodSeconds = 0.05f;
+#pragma warning restore 0414
         private InputActionReference m_Backspace;
         private InputActionReference m_Copy;
         private InputActionReference m_Cut;
