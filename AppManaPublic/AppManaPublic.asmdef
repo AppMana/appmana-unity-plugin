@@ -1,56 +1,56 @@
 {
-    "name": "AppManaPublic",
-    "rootNamespace": "",
-    "references": [
-        "Unity.InputSystem",
-        "Cinemachine",
-        "UnityEditor.UI",
-        "UnityEngine.UI",
-        "Unity.TextMeshPro",
-        "UniTask",
-        "UniRx",
-        "Unity.XR.ARSubsystems",
-        "Unity.XR.Management",
-        "Unity.XR.CoreUtils"
-    ],
-    "includePlatforms": [],
-    "excludePlatforms": [],
-    "allowUnsafeCode": true,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [
-        {
-            "name": "com.unity.inputsystem",
-            "expression": "1.0.0",
-            "define": "UNITY_INPUTSYSTEM"
-        },
-        {
-            "name": "com.neuecc.unirx",
-            "expression": "1.0.0",
-            "define": "UNIRX"
-        },
-        {
-            "name": "com.unity.cinemachine",
-            "expression": "[2.0.0,2.9.9)",
-            "define": "CINEMACHINE"
-        },
-        {
-            "name": "com.unity.textmeshpro",
-            "expression": "1.0.0",
-            "define": "TMP"
-        },
-        {
-            "name": "com.unity.xr.arfoundation",
-            "expression": "1.0.0",
-            "define": "AR_FOUNDATION"
-        },
-        {
-            "name": "com.unity.modules.xr",
-            "expression": "1.0.0",
-            "define": "CORE_UTILS"
-        }
-    ],
-    "noEngineReferences": false
+  "name": "AppManaPublic",
+  "rootNamespace": "",
+  "references": [
+    "Unity.InputSystem",
+    "Cinemachine",
+    "UnityEditor.UI",
+    "UnityEngine.UI",
+    "Unity.TextMeshPro",
+    "UniTask",
+    "UniRx",
+    "Unity.XR.ARSubsystems",
+    "Unity.XR.Management",
+    "Unity.XR.CoreUtils"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": true,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [
+    {
+      "name": "com.unity.inputsystem",
+      "expression": "1.0.0",
+      "define": "UNITY_INPUTSYSTEM"
+    },
+    {
+      "name": "com.neuecc.unirx",
+      "expression": "1.0.0",
+      "define": "UNIRX"
+    },
+    {
+      "name": "com.unity.cinemachine",
+      "expression": "2.0.0",
+      "define": "CINEMACHINE"
+    },
+    {
+      "name": "com.unity.textmeshpro",
+      "expression": "1.0.0",
+      "define": "TMP"
+    },
+    {
+      "name": "com.unity.xr.arfoundation",
+      "expression": "1.0.0",
+      "define": "AR_FOUNDATION"
+    },
+    {
+      "name": "com.unity.modules.xr",
+      "expression": "1.0.0",
+      "define": "CORE_UTILS"
+    }
+  ],
+  "noEngineReferences": false
 }
