@@ -77,16 +77,16 @@ namespace AppMana.InteractionToolkit
 
         protected virtual void Start()
         {
-            var pressed = false;
-
-            var enableWhenPressedAction = enableWhenPressed.action;
-            if (m_RemotePlayableConfiguration)
-            {
-                enableWhenPressedAction = m_RemotePlayableConfiguration.actions.FindAction(enableWhenPressedAction.id);
-            }
+            var pressed = !enableWhenPressed;
 
             if (enableWhenPressed)
             {
+                var enableWhenPressedAction = enableWhenPressed.action;
+                if (m_RemotePlayableConfiguration)
+                {
+                    enableWhenPressedAction = m_RemotePlayableConfiguration.actions.FindAction(enableWhenPressedAction.id);
+                }
+
                 enableWhenPressedAction.OnPerformedAsObservable()
                     .Subscribe(ctx => { pressed = ctx.ReadValueAsButton(); })
                     .AddTo(this);
