@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Build;
@@ -11,8 +12,7 @@ namespace AppManaPublic.Editor
     {
         public static void BuildScript()
         {
-            var output = Path.GetFullPath(
-                $"{Application.dataPath}/../build/{BuildTarget.WebGL}/{Application.productName}");
+            var output = ResolveOutputPath(Environment.GetCommandLineArgs());
             var previousCompression = PlayerSettings.WebGL.compressionFormat;
             var previousFallback = PlayerSettings.WebGL.decompressionFallback;
             var previousHashedNames = PlayerSettings.WebGL.nameFilesAsHashes;
@@ -53,6 +53,26 @@ namespace AppManaPublic.Editor
                 PlayerSettings.WebGL.decompressionFallback = previousFallback;
                 PlayerSettings.WebGL.nameFilesAsHashes = previousHashedNames;
             }
+        }
+
+        internal static string ResolveOutputPath(string[] args)
+        {
+            for (var i = 0; i < args.Length; i++)
+            {
+                const string prefix = "--output=";
+                if (args[i].StartsWith(prefix, StringComparison.Ordinal))
+                {
+                    return Path.GetFullPath(args[i].Substring(prefix.Length));
+                }
+
+                if (args[i] == "--output" && i + 1 < args.Length)
+                {
+                    return Path.GetFullPath(args[i + 1]);
+                }
+            }
+
+            return Path.GetFullPath(
+                $"{Application.dataPath}/../build/{BuildTarget.WebGL}/{Application.productName}");
         }
     }
 }
