@@ -38,13 +38,12 @@ namespace AppManaPublic.Editor
                 }
 
                 var buildDirectory = Path.Combine(output, "Build");
-                var required = new[] { "data.br", "framework.js.br", "wasm.br" };
-                var missing = required.Where(suffix =>
-                    !File.Exists(Path.Combine(buildDirectory, $"{Application.productName}.{suffix}"))).ToArray();
-                if (missing.Length != 0)
+                var invalid = FindInvalidArtifacts(buildDirectory);
+                if (invalid.Length != 0)
                 {
                     throw new BuildFailedException(
-                        $"Unity Web build did not produce the AppMana release artifacts: {string.Join(", ", missing)}");
+                        "Unity Web build did not produce one non-empty AppMana release artifact for each suffix: " +
+                        string.Join(", ", invalid));
                 }
             }
             finally
@@ -53,6 +52,20 @@ namespace AppManaPublic.Editor
                 PlayerSettings.WebGL.decompressionFallback = previousFallback;
                 PlayerSettings.WebGL.nameFilesAsHashes = previousHashedNames;
             }
+        }
+
+        internal static string[] FindInvalidArtifacts(string buildDirectory)
+        {
+            var required = new[] { "data.br", "framework.js.br", "wasm.br" };
+            if (!Directory.Exists(buildDirectory))
+            {
+                return required;
+            }
+
+            var files = Directory.GetFiles(buildDirectory);
+            return required.Where(suffix => files.Count(path =>
+                Path.GetFileName(path).EndsWith($".{suffix}", StringComparison.Ordinal) &&
+                new FileInfo(path).Length > 0) != 1).ToArray();
         }
 
         internal static string ResolveOutputPath(string[] args)
