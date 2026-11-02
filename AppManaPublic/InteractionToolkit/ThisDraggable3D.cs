@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using UniRx;
 using UniRx.Triggers;
+using AppManaPublic.Configuration;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
@@ -63,7 +64,7 @@ namespace AppMana.InteractionToolkit
             // todo: support something other than new input system
             this.OnBeginDragAsObservable().Subscribe(pointerEventData =>
             {
-                camera = pointerEventData.enterEventCamera ?? pointerEventData.pressEventCamera ?? Camera.main;
+                camera = Cameras.FirstAlive(pointerEventData.enterEventCamera, pointerEventData.pressEventCamera, Camera.main);
                 if (pointerEventData is ExtendedPointerEventData
                     {
                         control: Vector2Control draggingOnPointer

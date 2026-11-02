@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AppManaPublic.Configuration;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -97,7 +98,13 @@ namespace AppMana.InteractionToolkit
         {
             if (camera == null)
             {
-                camera = Camera.current ?? Camera.main;
+                camera = Cameras.FirstAlive(Camera.current, Camera.main);
+            }
+
+            // constraints built in code, such as xzPlane, were never deserialized and have no raycast buffers yet
+            if (m_RaycastHits1 == null || m_RaycastHits2 == null)
+            {
+                TryAllocateRaycastHits();
             }
 
             Assert.IsNotNull(camera, "Set a camera on the constraint to retrieve world positions");
