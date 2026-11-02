@@ -4,6 +4,7 @@ using AppMana.ComponentModel;
 using AppMana.Multiplayer;
 using AppManaPublic.Configuration;
 using UniRx;
+using UniRx.Triggers;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.EventSystems;
@@ -23,6 +24,12 @@ namespace AppMana.Compatibility
         /// <remarks>This method subscribes to the scene loaded observable to automatically adjust Canvases when a new scene is loaded.</remarks>
         public static void MultipleScenesMitigateScreenSpaceOverlays(Camera camera)
         {
+            if (camera == null)
+            {
+                // There is no camera to render the overlays through.
+                return;
+            }
+
             UnityUtilities.OnSceneLoadedAsObservable()
                 .Subscribe(_ =>
                 {
@@ -58,8 +65,16 @@ namespace AppMana.Compatibility
             RemotePlayableConfiguration remotePlayableConfiguration)
         {
             var thisSceneInputModule = UnityUtilities.FindAnyObjectByType<BaseInputModule>();
+            if (thisSceneInputModule == null)
+            {
+                // Nothing to preserve, so later scenes keep their own input modules.
+                return;
+            }
+
             Object.DontDestroyOnLoad(thisSceneInputModule);
             UnityUtilities.OnSceneLoadedAsObservable()
+                // A module that was unloaded with its scene can no longer stand in for the others.
+                .TakeUntilDestroy(thisSceneInputModule)
                 .Subscribe(_ =>
                 {
                     var otherInputModules = UnityUtilities.FindObjectsByType<BaseInputModule>(true)
@@ -69,7 +84,11 @@ namespace AppMana.Compatibility
                         var correspondingEventSystemGuess =
                             otherInputModule.GetComponentInChildren<EventSystem>();
                         // todo: do these need to be destroyed instead?
-                        correspondingEventSystemGuess.enabled = false;
+                        if (correspondingEventSystemGuess != null)
+                        {
+                            correspondingEventSystemGuess.enabled = false;
+                        }
+
                         otherInputModule.enabled = false;
                     }
                 })
@@ -84,19 +103,32 @@ namespace AppMana.Compatibility
         public static void MultipleScenesMitigateMultipleMainCameras(
             RemotePlayableConfiguration remotePlayableConfiguration)
         {
+            if (remotePlayableConfiguration.camera != null)
+            {
+                ReportCameraDestroyedBeforeItsPlayer(remotePlayableConfiguration.camera, remotePlayableConfiguration);
+            }
+
             UnityUtilities.OnSceneLoadedAsObservable()
                 .Subscribe(_ =>
                 {
-                    var parentConstraint = remotePlayableConfiguration.camera.GetComponent<ParentConstraint>();
+                    var camera = remotePlayableConfiguration.camera;
+                    if (camera == null)
+                    {
+                        // The camera was not assigned yet, or it was unloaded with its scene because it is not a
+                        // root object.
+                        return;
+                    }
+
+                    var parentConstraint = camera.GetComponent<ParentConstraint>();
                     if (parentConstraint == null)
                     {
                         parentConstraint =
-                            remotePlayableConfiguration.camera.gameObject.AddComponent<ParentConstraint>();
+                            camera.gameObject.AddComponent<ParentConstraint>();
                     }
 
                     var otherMainCameras = UnityUtilities.FindObjectsByType<Camera>(true)
-                        .Where(camera => camera.CompareTag("MainCamera"))
-                        .Where(otherCamera => remotePlayableConfiguration.camera != otherCamera)
+                        .Where(candidate => candidate.CompareTag("MainCamera"))
+                        .Where(otherCamera => camera != otherCamera)
                         .ToArray();
 
                     parentConstraint.constraintActive = false;
@@ -136,6 +168,11 @@ namespace AppMana.Compatibility
         /// <param name="target">The Camera object to preserve.</param>
         public static void MultipleScenesMitigateDestructionOfCamera(Camera target)
         {
+            if (target == null)
+            {
+                return;
+            }
+
             Object.DontDestroyOnLoad(target);
         }
 
@@ -146,7 +183,43 @@ namespace AppMana.Compatibility
         public static void MultipleScenesMitigateDestructionOfRemotePlayableConfiguration(
             RemotePlayableConfiguration remotePlayableConfiguration)
         {
+            if (remotePlayableConfiguration == null)
+            {
+                return;
+            }
+
             Object.DontDestroyOnLoad(remotePlayableConfiguration);
+        }
+
+        /// <summary>
+        /// Reports a streamed camera that was destroyed while its player survived, for example because the camera is
+        /// not a root object and was unloaded with its scene.
+        /// </summary>
+        private static void ReportCameraDestroyedBeforeItsPlayer(Camera camera,
+            RemotePlayableConfiguration remotePlayableConfiguration)
+        {
+            var quitting = Observable
+                .OnceApplicationQuit()
+                .Select(_ => true)
+                .ToReadOnlyReactiveProperty(false);
+            var cameraName = camera.name;
+            camera
+                .OnDestroyAsObservable()
+                .Where(_ => !quitting.Value)
+                .Take(1)
+                // Objects unloaded together are destroyed in no particular order; check after the unload finishes.
+                .DelayFrame(1)
+                .Where(_ => remotePlayableConfiguration != null && !quitting.Value)
+                .Subscribe(_ =>
+                {
+                    Debug.LogError(
+                        $"The streamed camera {cameraName} was destroyed while its {nameof(RemotePlayableConfiguration)} on " +
+                        $"{remotePlayableConfiguration.gameObject.name} survived, so streaming for this player ends. " +
+                        "Make the camera a root object, or a child of the root that holds the " +
+                        $"{nameof(RemotePlayableConfiguration)}, so it is preserved across scene loads.",
+                        remotePlayableConfiguration);
+                })
+                .AddTo(remotePlayableConfiguration);
         }
     }
 }
