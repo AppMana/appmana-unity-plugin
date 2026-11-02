@@ -182,33 +182,63 @@ namespace AppManaPublic.Configuration
             MultipleScenes.MultipleScenesMitigateScreenSpaceOverlays(camera);
         }
 
+        internal void ConfigureMultipleScenes()
+        {
+            if (m_EnableMultipleSceneMitigations)
+            {
+                DefaultMultipleSceneMitigations();
+            }
+            else if (camera != null)
+            {
+                var quitting = Observable
+                    .OnceApplicationQuit()
+                    .Select(_ => true)
+                    .ToReadOnlyReactiveProperty(false);
+
+                camera
+                    .OnDestroyAsObservable()
+                    .Where(_ => !quitting.Value)
+                    .Take(1)
+                    .Subscribe(_ =>
+                    {
+                        Debug.LogError(
+                            $"The camera was destroyed while streaming. This will cause the stream to abruptly end. " +
+                            $"Call DontDestroyOnLoad, and pass the camera as the first argument. If you are using multiple scenes, you will need to delete or disable the main camera from those scenes.",
+                            camera.gameObject);
+                    });
+            }
+        }
+
+        /// <summary>
+        /// The name of the action map the module's actions come from when <paramref name="actions"/> has none of
+        /// them, otherwise null. Assigning such an asset to the module would leave it without any actions.
+        /// </summary>
+        internal static string MissingUIActionMap(InputSystemUIInputModule module, InputActionAsset actions)
+        {
+            var maps = new[]
+                {
+                    module.point, module.leftClick, module.rightClick, module.middleClick, module.scrollWheel,
+                    module.move, module.submit, module.cancel, module.trackedDevicePosition,
+                    module.trackedDeviceOrientation
+                }
+                .Select(reference => reference != null ? reference.action?.actionMap : null)
+                .Where(map => map != null)
+                .Select(map => map.name)
+                .Distinct()
+                .ToArray();
+            if (maps.Length == 0 || maps.Any(map => actions.FindActionMap(map) != null))
+            {
+                return null;
+            }
+
+            return maps[0];
+        }
+
         protected virtual void AwakeImpl()
         {
             if (SceneManager.sceneCountInBuildSettings > 1)
             {
-                if (m_EnableMultipleSceneMitigations)
-                {
-                    DefaultMultipleSceneMitigations();
-                }
-                else
-                {
-                    var quitting = Observable
-                        .OnceApplicationQuit()
-                        .Select(_ => true)
-                        .ToReadOnlyReactiveProperty(false);
-
-                    camera
-                        .OnDestroyAsObservable()
-                        .Where(_ => !quitting.Value)
-                        .Take(1)
-                        .Subscribe(_ =>
-                        {
-                            Debug.LogError(
-                                $"The camera was destroyed while streaming. This will cause the stream to abruptly end. " +
-                                $"Call DontDestroyOnLoad, and pass the camera as the first argument. If you are using multiple scenes, you will need to delete or disable the main camera from those scenes.",
-                                camera.gameObject);
-                        });
-                }
+                ConfigureMultipleScenes();
             }
 
             m_Index = Interlocked.Increment(ref counter);
@@ -227,6 +257,18 @@ namespace AppManaPublic.Configuration
                 UniTask.Void(async () =>
                 {
                     await UniTask.DelayFrame(1);
+                    if (!AppManaHostBase.instance)
+                    {
+                        // The host exists only while AppMana streams this game, which may start later.
+                        var destroyed = this.GetCancellationTokenOnDestroy();
+                        await UniTask.WaitUntil(() => AppManaHostBase.instance, cancellationToken: destroyed)
+                            .SuppressCancellationThrow();
+                        if (destroyed.IsCancellationRequested)
+                        {
+                            return;
+                        }
+                    }
+
                     AppManaHostBase.instance.EnableAugmentedReality();
                 });
             }
@@ -252,7 +294,7 @@ namespace AppManaPublic.Configuration
                 if (count > 1)
                 {
                     // if there is a PlayerInput, warn that using it is a misconfiguration
-                    var playerInput = camera.GetComponentInChildren<PlayerInput>();
+                    var playerInput = camera != null ? camera.GetComponentInChildren<PlayerInput>() : null;
                     if (playerInput != null)
                     {
                         Debug.LogError(
@@ -284,6 +326,16 @@ namespace AppManaPublic.Configuration
             // Find the input modules associated with this user
             foreach (var inputSystemUIModule in GetComponentsInChildren<InputSystemUIInputModule>(true))
             {
+                var missingMap = MissingUIActionMap(inputSystemUIModule, m_Actions);
+                if (missingMap != null)
+                {
+                    Debug.LogError(
+                        $"The Actions asset {originalName} on {name} has no \"{missingMap}\" action map, so {inputSystemUIModule.name} keeps its own UI actions and responds to every device. " +
+                        $"Add a \"{missingMap}\" action map with the actions {nameof(InputSystemUIInputModule)} uses (such as Point and Click) to {originalName}.",
+                        inputSystemUIModule);
+                    continue;
+                }
+
                 // this automatically finds the corresponding actions, if they exist
                 inputSystemUIModule.actionsAsset = m_Actions;
             }
@@ -291,6 +343,16 @@ namespace AppManaPublic.Configuration
 #if TMP
             foreach (var tmpInputFieldModule in GetComponentsInChildren<InputSystemTMPInputFieldModule>(true))
             {
+                var missingMap = tmpInputFieldModule.MissingActionMap(m_Actions);
+                if (missingMap != null)
+                {
+                    Debug.LogError(
+                        $"The Actions asset {originalName} on {name} has no \"{missingMap}\" action map, so {tmpInputFieldModule.name} keeps its own text input actions and responds to every keyboard. " +
+                        $"Add a \"{missingMap}\" action map with the actions {nameof(InputSystemTMPInputFieldModule)} uses (such as Backspace and MoveLeft) to {originalName}.",
+                        tmpInputFieldModule);
+                    continue;
+                }
+
                 tmpInputFieldModule.actionsAsset = m_Actions;
             }
 #endif
@@ -420,18 +482,24 @@ namespace AppManaPublic.Configuration
             // with all devices instead
             // because there may be builds with multiple players, eventually this all needs to be handled by
             // StreamedMultiplayer
-            if (PluginBase.EnsurePlugins() == 0
-                && !Application.isEditor
-                && !Application.isBatchMode
-                // only associate the devices with the player that's rendering to the primary backbuffer
-                // i.e. the user we can actually see
-                && camera?.targetDisplay == 0)
+            if (ShouldPairLocalDevices(PluginBase.EnsurePlugins(), Application.isEditor, Application.isBatchMode, camera))
             {
                 foreach (var device in InputSystem.devices)
                 {
                     PerformPairingWithDevice(device);
                 }
             }
+        }
+
+        internal static bool ShouldPairLocalDevices(int pluginCount, bool isEditor, bool isBatchMode, Camera camera)
+        {
+            return pluginCount == 0
+                   && !isEditor
+                   && !isBatchMode
+                   // only associate the devices with the player that's rendering to the primary backbuffer
+                   // i.e. the user we can actually see
+                   && camera != null
+                   && camera.targetDisplay == 0;
         }
 
         protected sealed override void OnDisable()

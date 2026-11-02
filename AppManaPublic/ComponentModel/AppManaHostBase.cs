@@ -1,4 +1,4 @@
-using AppManaPublic.Configuration;
+﻿using AppManaPublic.Configuration;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using UnityEngine.EventSystems;
@@ -11,6 +11,16 @@ namespace AppMana.ComponentModel
     internal abstract class AppManaHostBase : UIBehaviour
     {
         internal static AppManaHostBase instance { get; set; }
+
+        protected override void OnDestroy()
+        {
+            if (instance == this)
+            {
+                instance = null;
+            }
+
+            base.OnDestroy();
+        }
         internal abstract void CloseLobby();
 
         internal abstract UniTask<JToken> EvalInPage(
