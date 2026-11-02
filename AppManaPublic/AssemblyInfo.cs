@@ -4,6 +4,8 @@ using AppManaPublic;
 
 [assembly: InternalsVisibleTo("AppMana")]
 [assembly: InternalsVisibleTo("AppManaPublic.Editor")]
+[assembly: InternalsVisibleTo("AppManaPublic.Tests.Runtime")]
+[assembly: InternalsVisibleTo("AppMana.Tests.Runtime")]
 [assembly: AssemblyFileVersion(AssemblyInfo.version)]
 
 namespace AppManaPublic

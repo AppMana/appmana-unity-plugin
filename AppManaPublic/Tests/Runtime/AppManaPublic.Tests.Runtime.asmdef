@@ -1,0 +1,25 @@
+{
+    "name": "AppManaPublic.Tests.Runtime",
+    "rootNamespace": "AppManaPublic.Tests.Runtime",
+    "references": [
+        "AppManaPublic",
+        "UniRx",
+        "UniTask",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll",
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}
