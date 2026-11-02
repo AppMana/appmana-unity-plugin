@@ -39,21 +39,47 @@ namespace AppMana.Compatibility
             {
                 Debug.LogError(
                     $"Add a {nameof(RemotePlayableConfiguration)} for valid usage of {nameof(ScreenCompatibility)}");
-                m_Camera = UnityUtilities.FindObjectsByType<Camera>(true)[0];
+                var cameras = UnityUtilities.FindObjectsByType<Camera>(true);
+                m_Camera = cameras.Length != 0 ? cameras[0] : null;
                 return;
             }
 
             m_Camera = configurations[0].camera;
         }
 
-        public static int width =>
-            m_Camera?.targetTexture?.width ?? m_Camera?.pixelWidth ?? (UnityEngine.Screen.width > 0
-                ? UnityEngine.Screen.width
-                : m_DefaultScreenSize[0]);
+        internal static Camera camera
+        {
+            get => m_Camera;
+            set => m_Camera = value;
+        }
 
-        public static int height =>
-            m_Camera?.targetTexture?.height ?? m_Camera?.pixelHeight ?? (UnityEngine.Screen.height > 0
-                ? UnityEngine.Screen.height
-                : m_DefaultScreenSize[1]);
+        // The camera can be destroyed by a scene load; Unity's == sees that, while ?. does not.
+        public static int width
+        {
+            get
+            {
+                if (m_Camera != null)
+                {
+                    var targetTexture = m_Camera.targetTexture;
+                    return targetTexture != null ? targetTexture.width : m_Camera.pixelWidth;
+                }
+
+                return UnityEngine.Screen.width > 0 ? UnityEngine.Screen.width : m_DefaultScreenSize[0];
+            }
+        }
+
+        public static int height
+        {
+            get
+            {
+                if (m_Camera != null)
+                {
+                    var targetTexture = m_Camera.targetTexture;
+                    return targetTexture != null ? targetTexture.height : m_Camera.pixelHeight;
+                }
+
+                return UnityEngine.Screen.height > 0 ? UnityEngine.Screen.height : m_DefaultScreenSize[1];
+            }
+        }
     }
 }

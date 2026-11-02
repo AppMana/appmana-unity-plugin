@@ -18,7 +18,8 @@ namespace AppMana.Multiplayer
         /// </summary>
         public void CloseLobby()
         {
-            StreamedInputs.instance.CloseLobby();
+            // Games without streamed inputs never create the StreamedInputs singleton.
+            StreamedInputs.CloseLobbyOnHost();
         }
     }
 }

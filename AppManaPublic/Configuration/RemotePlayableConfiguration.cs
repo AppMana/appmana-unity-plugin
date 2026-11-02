@@ -182,33 +182,38 @@ namespace AppManaPublic.Configuration
             MultipleScenes.MultipleScenesMitigateScreenSpaceOverlays(camera);
         }
 
+        internal void ConfigureMultipleScenes()
+        {
+            if (m_EnableMultipleSceneMitigations)
+            {
+                DefaultMultipleSceneMitigations();
+            }
+            else if (camera != null)
+            {
+                var quitting = Observable
+                    .OnceApplicationQuit()
+                    .Select(_ => true)
+                    .ToReadOnlyReactiveProperty(false);
+
+                camera
+                    .OnDestroyAsObservable()
+                    .Where(_ => !quitting.Value)
+                    .Take(1)
+                    .Subscribe(_ =>
+                    {
+                        Debug.LogError(
+                            $"The camera was destroyed while streaming. This will cause the stream to abruptly end. " +
+                            $"Call DontDestroyOnLoad, and pass the camera as the first argument. If you are using multiple scenes, you will need to delete or disable the main camera from those scenes.",
+                            camera.gameObject);
+                    });
+            }
+        }
+
         protected virtual void AwakeImpl()
         {
             if (SceneManager.sceneCountInBuildSettings > 1)
             {
-                if (m_EnableMultipleSceneMitigations)
-                {
-                    DefaultMultipleSceneMitigations();
-                }
-                else
-                {
-                    var quitting = Observable
-                        .OnceApplicationQuit()
-                        .Select(_ => true)
-                        .ToReadOnlyReactiveProperty(false);
-
-                    camera
-                        .OnDestroyAsObservable()
-                        .Where(_ => !quitting.Value)
-                        .Take(1)
-                        .Subscribe(_ =>
-                        {
-                            Debug.LogError(
-                                $"The camera was destroyed while streaming. This will cause the stream to abruptly end. " +
-                                $"Call DontDestroyOnLoad, and pass the camera as the first argument. If you are using multiple scenes, you will need to delete or disable the main camera from those scenes.",
-                                camera.gameObject);
-                        });
-                }
+                ConfigureMultipleScenes();
             }
 
             m_Index = Interlocked.Increment(ref counter);
@@ -227,6 +232,18 @@ namespace AppManaPublic.Configuration
                 UniTask.Void(async () =>
                 {
                     await UniTask.DelayFrame(1);
+                    if (!AppManaHostBase.instance)
+                    {
+                        // The host exists only while AppMana streams this game, which may start later.
+                        var destroyed = this.GetCancellationTokenOnDestroy();
+                        await UniTask.WaitUntil(() => AppManaHostBase.instance, cancellationToken: destroyed)
+                            .SuppressCancellationThrow();
+                        if (destroyed.IsCancellationRequested)
+                        {
+                            return;
+                        }
+                    }
+
                     AppManaHostBase.instance.EnableAugmentedReality();
                 });
             }
@@ -252,7 +269,7 @@ namespace AppManaPublic.Configuration
                 if (count > 1)
                 {
                     // if there is a PlayerInput, warn that using it is a misconfiguration
-                    var playerInput = camera.GetComponentInChildren<PlayerInput>();
+                    var playerInput = camera != null ? camera.GetComponentInChildren<PlayerInput>() : null;
                     if (playerInput != null)
                     {
                         Debug.LogError(
@@ -420,18 +437,24 @@ namespace AppManaPublic.Configuration
             // with all devices instead
             // because there may be builds with multiple players, eventually this all needs to be handled by
             // StreamedMultiplayer
-            if (PluginBase.EnsurePlugins() == 0
-                && !Application.isEditor
-                && !Application.isBatchMode
-                // only associate the devices with the player that's rendering to the primary backbuffer
-                // i.e. the user we can actually see
-                && camera?.targetDisplay == 0)
+            if (ShouldPairLocalDevices(PluginBase.EnsurePlugins(), Application.isEditor, Application.isBatchMode, camera))
             {
                 foreach (var device in InputSystem.devices)
                 {
                     PerformPairingWithDevice(device);
                 }
             }
+        }
+
+        internal static bool ShouldPairLocalDevices(int pluginCount, bool isEditor, bool isBatchMode, Camera camera)
+        {
+            return pluginCount == 0
+                   && !isEditor
+                   && !isBatchMode
+                   // only associate the devices with the player that's rendering to the primary backbuffer
+                   // i.e. the user we can actually see
+                   && camera != null
+                   && camera.targetDisplay == 0;
         }
 
         protected sealed override void OnDisable()

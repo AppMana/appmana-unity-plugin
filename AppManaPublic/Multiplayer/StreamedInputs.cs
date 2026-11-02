@@ -47,6 +47,21 @@ namespace AppMana.Multiplayer
             gameObject.AddComponent<StreamedInputs>();
         }
 
+        internal static void ResetForPlayMode()
+        {
+            instance = null;
+        }
+
+        protected override void OnDestroy()
+        {
+            if (instance == this)
+            {
+                instance = null;
+            }
+
+            base.OnDestroy();
+        }
+
         protected override void Awake()
         {
             instance = this;
@@ -280,9 +295,16 @@ namespace AppMana.Multiplayer
             // fix the raycasters
             foreach (var player in players)
             {
+                // a player's camera may not be assigned yet, or may have been unloaded with its scene
+                var camera = player.camera;
+                if (camera == null && players.Length > 1)
+                {
+                    continue;
+                }
+
                 // 3d
                 // this must always be on the camera
-                var physicsRaycaster = player.camera.GetComponent<PhysicsRaycaster>();
+                var physicsRaycaster = camera != null ? camera.GetComponent<PhysicsRaycaster>() : null;
                 if (physicsRaycaster != null && physicsRaycaster is not PerUserPhysicsRaycaster)
                 {
                     var replacement = physicsRaycaster.gameObject.AddComponent<PerUserPhysicsRaycaster>();
@@ -295,7 +317,7 @@ namespace AppMana.Multiplayer
                 }
 
                 // 2d
-                var physics2dRaycaster = player.camera.GetComponent<Physics2DRaycaster>();
+                var physics2dRaycaster = camera != null ? camera.GetComponent<Physics2DRaycaster>() : null;
                 if (physics2dRaycaster != null && physics2dRaycaster is not PerUserPhysics2DRaycaster)
                 {
                     var replacement = physics2dRaycaster.gameObject.AddComponent<PerUserPhysics2DRaycaster>();
@@ -311,7 +333,7 @@ namespace AppMana.Multiplayer
                 // canvas
                 var canvasRaycasters = players.Length == 1
                     ? UnityUtilities.FindObjectsByType<GraphicRaycaster>()
-                    : player.camera.GetComponentsInChildren<GraphicRaycaster>(true);
+                    : camera.GetComponentsInChildren<GraphicRaycaster>(true);
                 foreach (var canvasRaycaster in canvasRaycasters)
                 {
                     if (canvasRaycaster is PerUserGraphicRaycaster)
@@ -337,6 +359,11 @@ namespace AppMana.Multiplayer
         /// Closes the lobby. No more players can join the game.
         /// </summary>
         public void CloseLobby()
+        {
+            CloseLobbyOnHost();
+        }
+
+        internal static void CloseLobbyOnHost()
         {
             if (!AppManaHostBase.instance)
             {
