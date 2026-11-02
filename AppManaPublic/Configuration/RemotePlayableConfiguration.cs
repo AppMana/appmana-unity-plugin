@@ -209,6 +209,31 @@ namespace AppManaPublic.Configuration
             }
         }
 
+        /// <summary>
+        /// The name of the action map the module's actions come from when <paramref name="actions"/> has none of
+        /// them, otherwise null. Assigning such an asset to the module would leave it without any actions.
+        /// </summary>
+        internal static string MissingUIActionMap(InputSystemUIInputModule module, InputActionAsset actions)
+        {
+            var maps = new[]
+                {
+                    module.point, module.leftClick, module.rightClick, module.middleClick, module.scrollWheel,
+                    module.move, module.submit, module.cancel, module.trackedDevicePosition,
+                    module.trackedDeviceOrientation
+                }
+                .Select(reference => reference != null ? reference.action?.actionMap : null)
+                .Where(map => map != null)
+                .Select(map => map.name)
+                .Distinct()
+                .ToArray();
+            if (maps.Length == 0 || maps.Any(map => actions.FindActionMap(map) != null))
+            {
+                return null;
+            }
+
+            return maps[0];
+        }
+
         protected virtual void AwakeImpl()
         {
             if (SceneManager.sceneCountInBuildSettings > 1)
@@ -301,6 +326,16 @@ namespace AppManaPublic.Configuration
             // Find the input modules associated with this user
             foreach (var inputSystemUIModule in GetComponentsInChildren<InputSystemUIInputModule>(true))
             {
+                var missingMap = MissingUIActionMap(inputSystemUIModule, m_Actions);
+                if (missingMap != null)
+                {
+                    Debug.LogError(
+                        $"The Actions asset {originalName} on {name} has no \"{missingMap}\" action map, so {inputSystemUIModule.name} keeps its own UI actions and responds to every device. " +
+                        $"Add a \"{missingMap}\" action map with the actions {nameof(InputSystemUIInputModule)} uses (such as Point and Click) to {originalName}.",
+                        inputSystemUIModule);
+                    continue;
+                }
+
                 // this automatically finds the corresponding actions, if they exist
                 inputSystemUIModule.actionsAsset = m_Actions;
             }
