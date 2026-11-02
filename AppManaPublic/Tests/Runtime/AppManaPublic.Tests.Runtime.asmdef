@@ -17,7 +17,18 @@
     ],
     "autoReferenced": false,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.textmeshpro",
+            "expression": "1.0.0",
+            "define": "TMP"
+        },
+        {
+            "name": "com.unity.ugui",
+            "expression": "2.0.0",
+            "define": "TMP"
+        }
+    ],
     "noEngineReferences": false,
     "optionalUnityReferences": [
         "TestAssemblies"

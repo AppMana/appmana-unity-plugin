@@ -272,6 +272,30 @@ namespace AppMana.UI.TMPro
             }
         }
 
+        private static readonly string[] m_ActionNames =
+        {
+            nameof(m_Backspace), nameof(m_Copy), nameof(m_Cut), nameof(m_Deselect), nameof(m_Paste),
+            nameof(m_SelectAll), nameof(m_DeleteKey), nameof(m_MoveDown), nameof(m_MoveLeft), nameof(m_MoveRight),
+            nameof(m_MoveUp), nameof(m_MovePageDown), nameof(m_MovePageUp), nameof(m_MoveToEndOfLine),
+            nameof(m_MoveToStartOfLine)
+        };
+
+        /// <summary>
+        /// The name of the action map this module's actions come from when <paramref name="actions"/> lacks any of
+        /// the actions it needs, otherwise null. Assigning such an asset would leave the module without those actions.
+        /// </summary>
+        internal string MissingActionMap(InputActionAsset actions)
+        {
+            var names = actions.actionMaps.SelectMany(map => map.actions).Select(action => action.name).ToArray();
+            if (m_ActionNames.All(field => names.Contains(field.Substring("m_".Length), StringComparer.InvariantCultureIgnoreCase)))
+            {
+                return null;
+            }
+
+            var ownMap = m_Backspace != null ? m_Backspace.action?.actionMap : null;
+            return ownMap != null ? ownMap.name : "TextInput";
+        }
+
         private void AssignBasedOnNames()
         {
             m_Backspace = m_ActionsAsset.FindReference(nameof(m_Backspace));

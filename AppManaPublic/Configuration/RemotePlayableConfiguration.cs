@@ -343,6 +343,16 @@ namespace AppManaPublic.Configuration
 #if TMP
             foreach (var tmpInputFieldModule in GetComponentsInChildren<InputSystemTMPInputFieldModule>(true))
             {
+                var missingMap = tmpInputFieldModule.MissingActionMap(m_Actions);
+                if (missingMap != null)
+                {
+                    Debug.LogError(
+                        $"The Actions asset {originalName} on {name} has no \"{missingMap}\" action map, so {tmpInputFieldModule.name} keeps its own text input actions and responds to every keyboard. " +
+                        $"Add a \"{missingMap}\" action map with the actions {nameof(InputSystemTMPInputFieldModule)} uses (such as Backspace and MoveLeft) to {originalName}.",
+                        tmpInputFieldModule);
+                    continue;
+                }
+
                 tmpInputFieldModule.actionsAsset = m_Actions;
             }
 #endif
