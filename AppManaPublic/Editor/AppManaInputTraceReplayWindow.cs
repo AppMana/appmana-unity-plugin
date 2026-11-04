@@ -279,7 +279,7 @@ namespace AppManaPublic.Editor
                             recordedDevices.Add(new RecordedDeviceSummary
                             {
                                 deviceId = device.deviceId,
-                                name = device.name,
+                                name = device.layout,
                                 layout = device.layout
                             });
                         }
