@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -306,6 +306,19 @@ namespace AppManaPublic.Configuration
                         $"Set the Actions field on this object.",
                         this);
                 }
+                else if (m_EnableAllInputActions)
+                {
+                    foreach (var prop in UnityUtilities.FindObjectsByType<MonoBehaviour>(true)
+                                 .OfType<IHasInputActionReferences>()
+                                 .SelectMany(refs => refs.inputActionReferenceProperties))
+                    {
+                        var actionRef = prop.get();
+                        if (actionRef != null && actionRef.action != null && !actionRef.action.enabled)
+                        {
+                            actionRef.action.Enable();
+                        }
+                    }
+                }
 
                 return;
             }
@@ -397,7 +410,7 @@ namespace AppManaPublic.Configuration
                 }
                 else
                 {
-                    inputActionReference.Set(inputActionReference);
+                    prop.set(newInputActionReference);
                 }
             }
 

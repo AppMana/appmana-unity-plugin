@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Reflection;
 using AppManaPublic.Configuration;
 using UnityEngine;
@@ -64,25 +64,44 @@ namespace AppMana.Multiplayer
                 }
             }
 
-            if (eventCamera == null)
+            var cam = eventCamera;
+            if (cam == null)
             {
                 Debug.LogWarning(
                     $"Graphic raycaster on {gameObject.name} had a null event camera but a graphic raycaster");
+                base.Raycast(eventData, resultAppendList);
+                return;
+            }
+
+            if (Application.isEditor)
+            {
+                activeEditorGameViewTargetField.SetValue(null, cam.targetDisplay);
             }
             else
             {
-                if (Application.isEditor)
-                {
-                    activeEditorGameViewTargetField.SetValue(null, eventCamera.targetDisplay);
-                }
-                else
-                {
-                    // the camera's target display should always be zero, to pass the graphic raycaster issue here
-                    eventCamera.targetDisplay = 0;
-                }
+                // the camera's target display should always be zero, to pass the graphic raycaster issue here
+                cam.targetDisplay = 0;
             }
 
-            base.Raycast(eventData, resultAppendList);
+            var previousCullingMask = cam.cullingMask;
+            var previousBlockingMask = blockingMask;
+            try
+            {
+                cam.cullingMask |= 1 << gameObject.layer;
+                if (blockingObjects is BlockingObjects.ThreeD or BlockingObjects.All &&
+                    (int)blockingMask == ~0 &&
+                    cam.TryGetComponent<PhysicsRaycaster>(out var physicsRaycaster))
+                {
+                    blockingMask = physicsRaycaster.eventMask;
+                }
+
+                base.Raycast(eventData, resultAppendList);
+            }
+            finally
+            {
+                cam.cullingMask = previousCullingMask;
+                blockingMask = previousBlockingMask;
+            }
         }
     }
 }

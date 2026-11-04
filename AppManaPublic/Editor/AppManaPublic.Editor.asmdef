@@ -3,6 +3,8 @@
     "rootNamespace": "",
     "references": [
         "Unity.InputSystem",
+        "Cinemachine",
+        "Unity.Cinemachine",
         "UnityEditor.UI",
         "UnityEditor.TestRunner",
         "AppManaPublic",
@@ -22,6 +24,36 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [
+        {
+            "name": "com.unity.cinemachine",
+            "expression": "[2.0.0,3.0.0)",
+            "define": "CINEMACHINE"
+        },
+        {
+            "name": "com.unity.cinemachine",
+            "expression": "[2.0.0,3.0.0)",
+            "define": "CINEMACHINE_2"
+        },
+        {
+            "name": "com.unity.cinemachine",
+            "expression": "[2.0.0,3.0.0)",
+            "define": "APPMANA_CINEMACHINE_2"
+        },
+        {
+            "name": "com.unity.cinemachine",
+            "expression": "[3.0.0,4.0.0)",
+            "define": "CINEMACHINE"
+        },
+        {
+            "name": "com.unity.cinemachine",
+            "expression": "[3.0.0,4.0.0)",
+            "define": "CINEMACHINE_3"
+        },
+        {
+            "name": "com.unity.cinemachine",
+            "expression": "[3.0.0,4.0.0)",
+            "define": "APPMANA_CINEMACHINE_3"
+        },
         {
             "name": "com.unity.textmeshpro",
             "expression": "",
