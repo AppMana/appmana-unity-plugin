@@ -4325,10 +4325,14 @@ namespace AppMana.UI.TMPro
             if (m_TextComponent == null)
                 return;
 
+#if UNITY_2023_1_OR_NEWER
+            m_TextComponent.textWrappingMode = multiLine ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
+#else
             if (multiLine)
                 m_TextComponent.enableWordWrapping = true;
             else
                 m_TextComponent.enableWordWrapping = false;
+#endif
         }
 
         // Control Rich Text option on the text component.
