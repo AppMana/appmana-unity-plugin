@@ -4461,6 +4461,16 @@ namespace AppMana.UI.TMPro
         public virtual float flexibleHeight { get { return -1; } }
 
         /// <summary>
+        /// See ILayoutElement.maxWidth.
+        /// </summary>
+        public virtual float maxWidth { get { return -1; } }
+
+        /// <summary>
+        /// See ILayoutElement.maxHeight.
+        /// </summary>
+        public virtual float maxHeight { get { return -1; } }
+
+        /// <summary>
         /// See ILayoutElement.layoutPriority.
         /// </summary>
         public virtual int layoutPriority { get { return 1; } }
