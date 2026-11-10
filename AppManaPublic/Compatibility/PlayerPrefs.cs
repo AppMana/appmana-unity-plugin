@@ -1,4 +1,4 @@
-﻿using AppMana.ComponentModel;
+using AppMana.ComponentModel;
 using AppManaPublic.Configuration;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -24,11 +24,13 @@ namespace AppMana.Compatibility
         public static void DeleteAll()
         {
             defaultRemotePlayerPrefs.DeleteAll();
+            Save();
         }
 
         public static void DeleteKey(string key)
         {
             defaultRemotePlayerPrefs.DeleteKey(key);
+            Save();
         }
 
         public static bool HasKey(string key)
@@ -54,16 +56,19 @@ namespace AppMana.Compatibility
         public static void SetString(string key, string value)
         {
             defaultRemotePlayerPrefs.SetString(key, value);
+            Save();
         }
 
         public static void SetInt(string key, int value)
         {
             defaultRemotePlayerPrefs.SetInt(key, value);
+            Save();
         }
 
         public static void SetFloat(string key, float value)
         {
             defaultRemotePlayerPrefs.SetFloat(key, value);
+            Save();
         }
 
         public static RemotePlayerPrefs defaultRemotePlayerPrefs
